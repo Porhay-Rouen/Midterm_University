@@ -25,7 +25,7 @@ import model.university.University;
 public final class SampleData {
 
     /** Shared demo password; documented in the README. */
-    public static final String DEMO_PASSWORD = "1234";
+    public static final String DEMO_PASSWORD = "123456";
 
     private static final String[][] STUDENTS = {
         {"Porhay", "Rouen"}, {"Sokha", "Chan"}, {"Maya", "Patel"}, {"Liam", "Nguyen"}, {"Emma", "Garcia"},
