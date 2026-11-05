@@ -93,7 +93,7 @@ public class MainFrame extends javax.swing.JFrame {
     private void buildMenu() {
         switch (session.getRoleType()) {
             case ADMIN:
-                addPage("Dashboard", new ui.admin.DashboardPanel(ctx, session));
+                addPage("Admin", new ui.admin.AdminMainPanel(ctx, session));
                 break;
             case FACULTY:
                 addPage("My Courses", new ui.faculty.MyCoursesPanel(ctx, session));
