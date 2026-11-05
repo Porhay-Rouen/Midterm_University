@@ -68,6 +68,7 @@ public class StudentHomePanel extends javax.swing.JPanel {
         lblUser = new javax.swing.JLabel();
         btnLogOut = new javax.swing.JButton();
         pnlBody = new javax.swing.JPanel();
+        pnlNavHolder = new javax.swing.JPanel();
         pnlNav = new javax.swing.JPanel();
         btnRegister = new javax.swing.JButton();
         btnCoursework = new javax.swing.JButton();
@@ -117,47 +118,66 @@ public class StudentHomePanel extends javax.swing.JPanel {
 
         add(pnlHeader, java.awt.BorderLayout.NORTH);
 
+        pnlBody.setBackground(java.awt.Color.white);
         pnlBody.setLayout(new java.awt.BorderLayout());
 
+        pnlNavHolder.setBackground(java.awt.Color.white);
+        pnlNavHolder.setLayout(new java.awt.BorderLayout());
+
+        pnlNav.setBackground(java.awt.Color.white);
         pnlNav.setLayout(new java.awt.GridLayout(6, 1, 0, 8));
 
         btnRegister.setBackground(new java.awt.Color(100, 116, 139));
         btnRegister.setFont(new java.awt.Font("Helvetica Neue", 1, 12)); // NOI18N
         btnRegister.setForeground(java.awt.Color.white);
         btnRegister.setText("Register");
+        btnRegister.setBorderPainted(false);
+        btnRegister.setOpaque(true);
         pnlNav.add(btnRegister);
 
         btnCoursework.setBackground(new java.awt.Color(100, 116, 139));
         btnCoursework.setFont(new java.awt.Font("Helvetica Neue", 1, 12)); // NOI18N
         btnCoursework.setForeground(java.awt.Color.white);
         btnCoursework.setText("Coursework");
+        btnCoursework.setBorderPainted(false);
+        btnCoursework.setOpaque(true);
         pnlNav.add(btnCoursework);
 
         btnTranscript.setBackground(new java.awt.Color(100, 116, 139));
         btnTranscript.setFont(new java.awt.Font("Helvetica Neue", 1, 12)); // NOI18N
         btnTranscript.setForeground(java.awt.Color.white);
         btnTranscript.setText("Transcript");
+        btnTranscript.setBorderPainted(false);
+        btnTranscript.setOpaque(true);
         pnlNav.add(btnTranscript);
 
         btnGraduation.setBackground(new java.awt.Color(100, 116, 139));
         btnGraduation.setFont(new java.awt.Font("Helvetica Neue", 1, 12)); // NOI18N
         btnGraduation.setForeground(java.awt.Color.white);
         btnGraduation.setText("Grad. Audit");
+        btnGraduation.setBorderPainted(false);
+        btnGraduation.setOpaque(true);
         pnlNav.add(btnGraduation);
 
         btnTuition.setBackground(new java.awt.Color(100, 116, 139));
         btnTuition.setFont(new java.awt.Font("Helvetica Neue", 1, 12)); // NOI18N
         btnTuition.setForeground(java.awt.Color.white);
         btnTuition.setText("Tuition");
+        btnTuition.setBorderPainted(false);
+        btnTuition.setOpaque(true);
         pnlNav.add(btnTuition);
 
         btnProfile.setBackground(new java.awt.Color(100, 116, 139));
         btnProfile.setFont(new java.awt.Font("Helvetica Neue", 1, 12)); // NOI18N
         btnProfile.setForeground(java.awt.Color.white);
         btnProfile.setText("Profile");
+        btnProfile.setBorderPainted(false);
+        btnProfile.setOpaque(true);
         pnlNav.add(btnProfile);
 
-        pnlBody.add(pnlNav, java.awt.BorderLayout.WEST);
+        pnlNavHolder.add(pnlNav, java.awt.BorderLayout.NORTH);
+
+        pnlBody.add(pnlNavHolder, java.awt.BorderLayout.WEST);
 
         pnlContent.setLayout(new java.awt.CardLayout());
         pnlBody.add(pnlContent, java.awt.BorderLayout.CENTER);
@@ -180,5 +200,6 @@ public class StudentHomePanel extends javax.swing.JPanel {
     private javax.swing.JPanel pnlContent;
     private javax.swing.JPanel pnlHeader;
     private javax.swing.JPanel pnlNav;
+    private javax.swing.JPanel pnlNavHolder;
     // End of variables declaration//GEN-END:variables
 }
