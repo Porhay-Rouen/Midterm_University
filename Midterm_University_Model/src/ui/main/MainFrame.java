@@ -99,9 +99,9 @@ public class MainFrame extends javax.swing.JFrame {
                 addPage("My Courses", new ui.faculty.MyCoursesPanel(ctx, session));
                 break;
             case STUDENT:
-               
-                addPage("Register", new ui.student.RegisterPanel(ctx, session));
-
+                addPage("Student", new ui.student.StudentHomePanel(ctx, session));
+                setSize(1100, 700);     // same window size as the Registrar screens
+                setLocationRelativeTo(null);     // re-center after resizing
                 break;               
             case REGISTRAR:
                 addPage("Registrar", new ui.registrar.RegistrarHomePanel(ctx, session));
