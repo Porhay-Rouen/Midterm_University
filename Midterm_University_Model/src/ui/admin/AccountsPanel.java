@@ -160,7 +160,7 @@ public class AccountsPanel extends javax.swing.JPanel {
         btnToggle1.setText("Delete Account");
         btnToggle1.addActionListener(this::btnToggle1ActionPerformed);
 
-        txtPassword.setText("jPasswordField1");
+        txtPassword.addActionListener(this::txtPasswordActionPerformed);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -293,6 +293,10 @@ public class AccountsPanel extends javax.swing.JPanel {
                 "Cannot delete account", javax.swing.JOptionPane.ERROR_MESSAGE);
     }
     }//GEN-LAST:event_btnToggle1ActionPerformed
+
+    private void txtPasswordActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtPasswordActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_txtPasswordActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
