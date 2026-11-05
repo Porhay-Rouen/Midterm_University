@@ -91,6 +91,11 @@ public class StudentHomePanel extends javax.swing.JPanel {
         lblUser.setText("Signed in as...");
 
         btnLogOut.setText("Log Out");
+        btnLogOut.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnLogOutActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout pnlHeaderLayout = new javax.swing.GroupLayout(pnlHeader);
         pnlHeader.setLayout(pnlHeaderLayout);
@@ -184,6 +189,17 @@ public class StudentHomePanel extends javax.swing.JPanel {
 
         add(pnlBody, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnLogOutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLogOutActionPerformed
+        // TODO add your handling code here:
+
+        ctx.getAccessControl().logout(session);                  // ends the session
+        java.awt.Window window = javax.swing.SwingUtilities.getWindowAncestor(this);
+        if (window != null) {
+            window.dispose();                                    // closes the main window
+        }
+        new ui.login.LoginFrame(ctx).setVisible(true);           // back to the login screen
+    }//GEN-LAST:event_btnLogOutActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
