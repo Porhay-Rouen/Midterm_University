@@ -37,6 +37,15 @@
             <file>file:/Users/macbookpro/NetBeansProjects/Northeastern%20University/midterm_project/Midterm_University/Midterm_University_Model/src/app/AppContext.java</file>
             <file>file:/Users/macbookpro/NetBeansProjects/Northeastern%20University/midterm_project/Midterm_University/Midterm_University_Model/src/app/SampleData.java</file>
             <file>file:/Users/macbookpro/NetBeansProjects/Northeastern%20University/midterm_project/Midterm_University/Midterm_University_Model/src/ui/login/LoginFrame.java</file>
+            <file>file:/Users/macbookpro/NetBeansProjects/Northeastern%20University/midterm_project/Midterm_University/Midterm_University_Model/src/ui/main/MainFrame.java</file>
+            <file>file:/Users/macbookpro/NetBeansProjects/Northeastern%20University/midterm_project/Midterm_University/Midterm_University_Model/src/ui/main/PlaceholderPanel.java</file>
+            <file>file:/Users/macbookpro/NetBeansProjects/Northeastern%20University/midterm_project/Midterm_University/Midterm_University_Model/src/ui/admin/DashboardPanel.java</file>
+            <file>file:/Users/macbookpro/NetBeansProjects/Northeastern%20University/midterm_project/Midterm_University/Midterm_University_Model/src/ui/faculty/MyCoursesPanel.java</file>
+            <file>file:/Users/macbookpro/NetBeansProjects/Northeastern%20University/midterm_project/Midterm_University/Midterm_University_Model/src/ui/register/OfferingPanel.java</file>
+            <file>file:/Users/macbookpro/NetBeansProjects/Northeastern%20University/midterm_project/Midterm_University/Midterm_University_Model/src/ui/student/RegisterPanel.java</file>
+            <file>file:/Users/macbookpro/NetBeansProjects/Northeastern%20University/midterm_project/Midterm_University/Midterm_University_Model/src/ui/admin/AdminMainPanel.java</file>
+            <file>file:/Users/macbookpro/NetBeansProjects/Northeastern%20University/midterm_project/Midterm_University/Midterm_University_Model/src/ui/admin/RegisterPanel.java</file>
+            <file>file:/Users/macbookpro/NetBeansProjects/Northeastern%20University/midterm_project/Midterm_University/Midterm_University_Model/src/ui/admin/AccountsPanel.java</file>
         </group>
     </open-files>
 </project-private>

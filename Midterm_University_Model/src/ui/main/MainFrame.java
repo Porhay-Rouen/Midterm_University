@@ -93,7 +93,7 @@ public class MainFrame extends javax.swing.JFrame {
     private void buildMenu() {
         switch (session.getRoleType()) {
             case ADMIN:
-                addPage("Dashboard", new ui.admin.DashboardPanel(ctx, session));
+                addPage("Admin", new ui.admin.AdminMainPanel(ctx, session));
                 break;
             case FACULTY:
                 addPage("My Courses", new ui.faculty.MyCoursesPanel(ctx, session));
@@ -104,7 +104,9 @@ public class MainFrame extends javax.swing.JFrame {
 
                 break;               
             case REGISTRAR:
-                addPage("Offerings", new ui.register.OfferingPanel(ctx, session));
+                addPage("Registrar", new ui.registrar.RegistrarHomePanel(ctx, session));
+                setSize(1100, 700);              // registrar pages need a wider window
+                setLocationRelativeTo(null);     // re-center after resizing
                 break;
         }
         addLogoutButton();
