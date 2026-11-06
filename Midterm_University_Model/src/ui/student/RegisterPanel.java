@@ -6,6 +6,15 @@ package ui.student;
 
 import access.Session;
 import app.AppContext;
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.table.DefaultTableModel;
+import model.course.CourseOffering;
+import model.course.CourseSchedule;
+import model.course.Semester;
+import model.person.StudentRole;
+import model.record.CourseLoad;
 
 /**
  *
@@ -18,20 +27,103 @@ public class RegisterPanel extends javax.swing.JPanel {
      */
     private AppContext ctx;
     private Session session;
-    
+
+    private StudentRole student;
+    private List<CourseOffering> shown = new ArrayList<>();   // row i in the table = shown.get(i)
+
     public RegisterPanel() {
         initComponents();
     }
-    
-    
-    
+
+    /**
+     * The Semester picked in the dropdown (null if none).
+     */
+    private Semester selectedSemester() {
+        return ctx.getUniversity().findSemester((String) cmbSemester.getSelectedItem());
+    }
+
+    /**
+     * That semester's course schedule for the student's department (null if
+     * none).
+     */
+    private CourseSchedule currentSchedule() {
+        Semester semester = selectedSemester();
+        if (semester == null) {
+            return null;
+        }
+        return student.getDepartment().findSchedule(semester);
+    }
+
+    /**
+     * True when this student already holds a seat in the offering.
+     */
+    private boolean isEnrolled(CourseOffering o) {
+        CourseLoad load = student.getTranscript().findCourseLoad(o.getSemester());
+        return load != null && load.findByOffering(o) != null;
+    }
+
+    /**
+     * Erases the table and writes one row per offering. Remembers the list so
+     * row i = offering i.
+     */
+    private void refreshTable(List<CourseOffering> offerings) {
+        shown = offerings;
+        DefaultTableModel model = (DefaultTableModel) tblOfferings.getModel();
+        model.setRowCount(0);
+        for (CourseOffering o : offerings) {
+            model.addRow(new Object[]{
+                o.getCourse().getCourseId(), o.getTitle(), o.getFacultyName(), o.getCourse().getCredits(), o.getMeetingTime(), o.getOpenSeats(),
+                isEnrolled(o) ? "Enrolled" : ""
+            });
+        }
+    }
+
+    /**
+     * Shows "Credits: X of 8" for the selected semester.
+     */
+    private void updateCredits() {
+        int used = 0;
+        Semester semester = selectedSemester();
+        if (semester != null) {
+            CourseLoad load = student.getTranscript().findCourseLoad(semester);
+            if (load != null) {
+                used = load.getTotalCredits();
+            }
+        }
+        lblCredits.setText("Credits: " + used + " of " + CourseLoad.MAX_CREDITS);
+    }
+
+    /**
+     * Shows every offering for the selected semester.
+     */
+    private void showAll() {
+        CourseSchedule schedule = currentSchedule();
+        if (schedule == null) {
+            refreshTable(new ArrayList<>());
+        } else {
+            refreshTable(schedule.getOfferings());
+        }
+        updateCredits();
+    }
+
+    /**
+     * Require student role for login
+     */
     public RegisterPanel(AppContext ctx, Session session) {
         this();
         session.requireRole(model.person.Role.Type.STUDENT);
         this.ctx = ctx;
         this.session = session;
-    }
 
+        student = (StudentRole) session.getRole();
+        scrOfferings.getViewport().setBackground(Color.WHITE);  // white space under the rows
+
+        for (Semester s : ctx.getUniversity().getSemesters()) {
+            cmbSemester.addItem(s.getName());
+        }
+        showAll();
+
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -81,6 +173,11 @@ public class RegisterPanel extends javax.swing.JPanel {
         pnlSearch.add(btnSearch);
 
         btnShowAll.setText("Show All");
+        btnShowAll.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnShowAllActionPerformed(evt);
+            }
+        });
         pnlSearch.add(btnShowAll);
 
         add(pnlSearch, java.awt.BorderLayout.NORTH);
@@ -120,6 +217,10 @@ public class RegisterPanel extends javax.swing.JPanel {
 
         add(pnlActions, java.awt.BorderLayout.SOUTH);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnShowAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowAllActionPerformed
+        showAll();
+    }//GEN-LAST:event_btnShowAllActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
