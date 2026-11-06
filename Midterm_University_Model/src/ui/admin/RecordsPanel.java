@@ -13,6 +13,9 @@ import app.AppContext;
  */
 public class RecordsPanel extends javax.swing.JPanel {
     private final java.util.List<model.person.Person> rowPersons = new java.util.ArrayList<>();
+    private java.util.List<model.course.CourseOffering> offerings = new java.util.ArrayList<>();
+    private java.util.List<model.person.FacultyRole> facultyList = new java.util.ArrayList<>();
+
 
     /**
      * Creates new form RecordsPanel
@@ -38,12 +41,14 @@ public class RecordsPanel extends javax.swing.JPanel {
             }
         });
         showResults(ctx.getUniversity().getPersons());
+        loadOfferingChoices();                                  
 
         // reload every time this page is shown, so the data is never old
         addComponentListener(new java.awt.event.ComponentAdapter() {
             @Override
             public void componentShown(java.awt.event.ComponentEvent e) {
                 showResults(RecordsPanel.this.ctx.getUniversity().getPersons());
+                loadOfferingChoices();                            
             }
         });
     }
@@ -100,6 +105,29 @@ public class RecordsPanel extends javax.swing.JPanel {
         txtEmail.setText("");
         txtPhone.setText("");
         chkActive.setSelected(false);
+    }
+    private void loadOfferingChoices() {
+        int keepOffering = cmbOffering.getSelectedIndex();   // so the choice does not jump back to the first one
+        offerings = new java.util.ArrayList<>();
+        facultyList = new java.util.ArrayList<>();
+        cmbOffering.removeAllItems();
+        cmbFaculty.removeAllItems();
+        for (model.university.Department d : ctx.getUniversity().getAllDepartments()) {
+            for (model.course.CourseSchedule schedule : d.getSchedules()) {
+                for (model.course.CourseOffering o : schedule.getOfferings()) {
+                    offerings.add(o);
+                    cmbOffering.addItem(o.getSemester() + " | " + o.getCourse().getCourseId()
+                            + " | " + o.getFacultyName());
+                }
+            }
+            for (model.person.FacultyRole f : d.getFacultyDirectory().getFacultyList()) {
+                facultyList.add(f);
+                cmbFaculty.addItem(f.getPerson().getFullName());
+            }
+        }
+        if (keepOffering >= 0 && keepOffering < cmbOffering.getItemCount()) {
+            cmbOffering.setSelectedIndex(keepOffering);
+        }
     }
 
     /**
@@ -170,12 +198,16 @@ public class RecordsPanel extends javax.swing.JPanel {
         jLabel2.setText("Search Records ");
 
         btnByName.setText("By name");
+        btnByName.addActionListener(this::btnByNameActionPerformed);
 
         btnById.setText("By ID");
+        btnById.addActionListener(this::btnByIdActionPerformed);
 
         btnByDept.setText("By department");
+        btnByDept.addActionListener(this::btnByDeptActionPerformed);
 
         btnShowAll.setText("Show all");
+        btnShowAll.addActionListener(this::btnShowAllActionPerformed);
 
         jLabel3.setFont(new java.awt.Font("Helvetica Neue", 1, 13)); // NOI18N
         jLabel3.setText("Records List");
@@ -220,8 +252,10 @@ public class RecordsPanel extends javax.swing.JPanel {
         chkActive.setText("Active");
 
         btnUpdate.setText("Update");
+        btnUpdate.addActionListener(this::btnUpdateActionPerformed);
 
         btnDelete.setText("Delete");
+        btnDelete.addActionListener(this::btnDeleteActionPerformed);
 
         jLabel9.setFont(new java.awt.Font("Helvetica Neue", 1, 13)); // NOI18N
         jLabel9.setText("Reassignment");
@@ -231,6 +265,7 @@ public class RecordsPanel extends javax.swing.JPanel {
         jLabel11.setText("New Faculty");
 
         btnReassign.setText("Reassign");
+        btnReassign.addActionListener(this::btnReassignActionPerformed);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
@@ -343,6 +378,136 @@ public class RecordsPanel extends javax.swing.JPanel {
                 .addGap(0, 14, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
+    
+    
+    /** The person in the selected table row. Throws a clear message if no row is selected. */
+    private model.person.Person selectedPerson() {
+        int row = tblRecords.getSelectedRow();
+        if (row < 0) {
+            throw new IllegalArgumentException("Select a person in the table first.");
+        }
+        return rowPersons.get(tblRecords.convertRowIndexToModel(row));
+    }
+    
+    private void btnByNameActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnByNameActionPerformed
+        // TODO add your handling code here:
+        
+        try {
+            showResults(ctx.getUniversity().searchByName(txtSearch.getText()));
+            showNoResultsMessage();
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage(),
+                    "Cannot search", javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
+        
+    }//GEN-LAST:event_btnByNameActionPerformed
+
+    private void btnByIdActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnByIdActionPerformed
+        // TODO add your handling code here:
+        
+        try {
+            showResults(ctx.getUniversity().searchById(txtSearch.getText()));
+            showNoResultsMessage();
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage(),
+                    "Cannot search", javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_btnByIdActionPerformed
+
+    private void btnByDeptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnByDeptActionPerformed
+        // TODO add your handling code here:
+        
+        try {
+            showResults(ctx.getUniversity().searchByDepartment(txtSearch.getText()));
+            showNoResultsMessage();
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage(),
+                    "Cannot search", javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
+        
+    }//GEN-LAST:event_btnByDeptActionPerformed
+
+    private void showNoResultsMessage() {
+        if (rowPersons.isEmpty()) {
+            javax.swing.JOptionPane.showMessageDialog(this, "No matching students or faculty found.");
+        }
+    }    
+    private void btnShowAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowAllActionPerformed
+        // TODO add your handling code here:
+        
+        txtSearch.setText("");
+        showResults(ctx.getUniversity().getPersons());
+    }//GEN-LAST:event_btnShowAllActionPerformed
+
+    private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
+        // TODO add your handling code here:
+        try {
+            model.person.Person p = selectedPerson();
+            // check everything first, so a bad field cannot leave a half-edited record
+            model.util.Validation.requireText(txtFirst.getText(), "First name");
+            model.util.Validation.requireText(txtLast.getText(), "Last name");
+            model.util.Validation.optionalPhone(txtPhone.getText());
+            ctx.getUniversity().changeEmail(p, txtEmail.getText());   // blocks a duplicate email
+            p.setFirstName(txtFirst.getText());
+            p.setLastName(txtLast.getText());
+            p.setPhone(txtPhone.getText());
+            p.setActive(chkActive.isSelected());
+            showResults(ctx.getUniversity().getPersons());
+            javax.swing.JOptionPane.showMessageDialog(this, "Record updated.");
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage(),
+                    "Cannot update", javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_btnUpdateActionPerformed
+
+    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
+        // TODO add your handling code here:
+        
+        try {
+            model.person.Person p = selectedPerson();
+            int answer = javax.swing.JOptionPane.showConfirmDialog(this,
+                    "Delete " + p.getFullName() + " (" + p.getUniversityId() + ")?\n"
+                    + "This also removes their login and frees their seats.",
+                    "Please confirm", javax.swing.JOptionPane.YES_NO_OPTION);
+            if (answer != javax.swing.JOptionPane.YES_OPTION) {
+                return;
+            }
+            model.person.StudentRole student = p.getRole(model.person.StudentRole.class);
+            if (student != null) {
+                student.releaseAllSeats();   // give their course seats back
+            }
+            String username = ctx.getAccessControl().usernameOf(p);
+            ctx.getUniversity().deletePerson(p);
+            if (username != null) {
+                ctx.getAccessControl().deleteAccount(username);   // remove the login too
+            }
+            showResults(ctx.getUniversity().getPersons());
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage(),
+                    "Cannot delete", javax.swing.JOptionPane.ERROR_MESSAGE);
+        }
+    }//GEN-LAST:event_btnDeleteActionPerformed
+
+    private void btnReassignActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReassignActionPerformed
+        // TODO add your handling code here:
+            try {
+                int offeringIndex = cmbOffering.getSelectedIndex();
+                int facultyIndex = cmbFaculty.getSelectedIndex();
+                if (offeringIndex < 0 || facultyIndex < 0) {
+                    throw new IllegalArgumentException("Choose an offering and a faculty member.");
+                }
+                model.course.CourseOffering offering = offerings.get(offeringIndex);
+                model.person.FacultyRole faculty = facultyList.get(facultyIndex);
+                offering.assignFaculty(faculty);
+                loadOfferingChoices();   // refresh the offering text to show the new teacher
+                javax.swing.JOptionPane.showMessageDialog(this, faculty.getPerson().getFullName()
+                        + " now teaches " + offering.getCourse().getCourseId() + ".");
+            } catch (IllegalArgumentException | IllegalStateException ex) {
+                javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage(),
+                        "Cannot reassign", javax.swing.JOptionPane.ERROR_MESSAGE);
+            }
+        
+    }//GEN-LAST:event_btnReassignActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables

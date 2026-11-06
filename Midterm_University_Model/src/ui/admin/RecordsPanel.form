@@ -207,21 +207,33 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="By name"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnByNameActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="btnById">
       <Properties>
         <Property name="text" type="java.lang.String" value="By ID"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnByIdActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="btnByDept">
       <Properties>
         <Property name="text" type="java.lang.String" value="By department"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnByDeptActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="btnShowAll">
       <Properties>
         <Property name="text" type="java.lang.String" value="Show all"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnShowAllActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel3">
       <Properties>
@@ -330,11 +342,17 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="Update"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnUpdateActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JButton" name="btnDelete">
       <Properties>
         <Property name="text" type="java.lang.String" value="Delete"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnDeleteActionPerformed"/>
+      </Events>
     </Component>
     <Component class="javax.swing.JLabel" name="jLabel9">
       <Properties>
@@ -378,6 +396,9 @@
       <Properties>
         <Property name="text" type="java.lang.String" value="Reassign"/>
       </Properties>
+      <Events>
+        <EventHandler event="actionPerformed" listener="java.awt.event.ActionListener" parameters="java.awt.event.ActionEvent" handler="btnReassignActionPerformed"/>
+      </Events>
     </Component>
   </SubComponents>
 </Form>
