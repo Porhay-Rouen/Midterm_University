@@ -10,6 +10,8 @@ import java.awt.CardLayout;
 import java.awt.Color;
 import model.person.Role;
 import ui.main.PlaceholderPanel;
+import java.awt.Component;
+import javax.swing.JButton;
 
 /**
  * Student home screen: header, nav buttons, and a CardLayout content area.
@@ -46,12 +48,19 @@ public class StudentHomePanel extends javax.swing.JPanel {
         pnlContent.add(new PlaceholderPanel("Tuition"), "Tuition");
         pnlContent.add(new PlaceholderPanel("Profile"), "Profile");
 
-        showPage("Register");                     // start on Register
+        showPage("Register", btnRegister);
     }
 
-    private void showPage(String name) {
+    /**
+     * Shows one page, updates the title, and highlights the active nav button.
+     */
+    private void showPage(String name, JButton activeButton) {
         ((CardLayout) pnlContent.getLayout()).show(pnlContent, name);
         lblTitle.setText("Student: " + name);
+        for (Component c : pnlNav.getComponents()) {   // roll call: everything in the nav
+            c.setBackground(INACTIVE);                  // everyone back to gray
+        }
+        activeButton.setBackground(ACTIVE);             // then the clicked one turns blue
     }
 
     /**
@@ -138,6 +147,11 @@ public class StudentHomePanel extends javax.swing.JPanel {
         btnRegister.setText("Register");
         btnRegister.setBorderPainted(false);
         btnRegister.setOpaque(true);
+        btnRegister.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnRegisterActionPerformed(evt);
+            }
+        });
         pnlNav.add(btnRegister);
 
         btnCoursework.setBackground(new java.awt.Color(100, 116, 139));
@@ -146,6 +160,11 @@ public class StudentHomePanel extends javax.swing.JPanel {
         btnCoursework.setText("Coursework");
         btnCoursework.setBorderPainted(false);
         btnCoursework.setOpaque(true);
+        btnCoursework.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCourseworkActionPerformed(evt);
+            }
+        });
         pnlNav.add(btnCoursework);
 
         btnTranscript.setBackground(new java.awt.Color(100, 116, 139));
@@ -154,6 +173,11 @@ public class StudentHomePanel extends javax.swing.JPanel {
         btnTranscript.setText("Transcript");
         btnTranscript.setBorderPainted(false);
         btnTranscript.setOpaque(true);
+        btnTranscript.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnTranscriptActionPerformed(evt);
+            }
+        });
         pnlNav.add(btnTranscript);
 
         btnGraduation.setBackground(new java.awt.Color(100, 116, 139));
@@ -162,6 +186,11 @@ public class StudentHomePanel extends javax.swing.JPanel {
         btnGraduation.setText("Grad. Audit");
         btnGraduation.setBorderPainted(false);
         btnGraduation.setOpaque(true);
+        btnGraduation.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnGraduationActionPerformed(evt);
+            }
+        });
         pnlNav.add(btnGraduation);
 
         btnTuition.setBackground(new java.awt.Color(100, 116, 139));
@@ -170,6 +199,11 @@ public class StudentHomePanel extends javax.swing.JPanel {
         btnTuition.setText("Tuition");
         btnTuition.setBorderPainted(false);
         btnTuition.setOpaque(true);
+        btnTuition.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnTuitionActionPerformed(evt);
+            }
+        });
         pnlNav.add(btnTuition);
 
         btnProfile.setBackground(new java.awt.Color(100, 116, 139));
@@ -178,6 +212,11 @@ public class StudentHomePanel extends javax.swing.JPanel {
         btnProfile.setText("Profile");
         btnProfile.setBorderPainted(false);
         btnProfile.setOpaque(true);
+        btnProfile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnProfileActionPerformed(evt);
+            }
+        });
         pnlNav.add(btnProfile);
 
         pnlNavHolder.add(pnlNav, java.awt.BorderLayout.NORTH);
@@ -191,7 +230,6 @@ public class StudentHomePanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnLogOutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLogOutActionPerformed
-        // TODO add your handling code here:
 
         ctx.getAccessControl().logout(session);                  // ends the session
         java.awt.Window window = javax.swing.SwingUtilities.getWindowAncestor(this);
@@ -200,6 +238,30 @@ public class StudentHomePanel extends javax.swing.JPanel {
         }
         new ui.login.LoginFrame(ctx).setVisible(true);           // back to the login screen
     }//GEN-LAST:event_btnLogOutActionPerformed
+
+    private void btnGraduationActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGraduationActionPerformed
+        showPage("Grad. Audit", btnGraduation);
+    }//GEN-LAST:event_btnGraduationActionPerformed
+
+    private void btnRegisterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegisterActionPerformed
+        showPage("Register", btnRegister);
+    }//GEN-LAST:event_btnRegisterActionPerformed
+
+    private void btnCourseworkActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCourseworkActionPerformed
+        showPage("Coursework", btnCoursework);
+    }//GEN-LAST:event_btnCourseworkActionPerformed
+
+    private void btnTranscriptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTranscriptActionPerformed
+        showPage("Transcript", btnTranscript);
+    }//GEN-LAST:event_btnTranscriptActionPerformed
+
+    private void btnTuitionActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTuitionActionPerformed
+        showPage("Tuition", btnTuition);
+    }//GEN-LAST:event_btnTuitionActionPerformed
+
+    private void btnProfileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProfileActionPerformed
+        showPage("Profile", btnProfile);
+    }//GEN-LAST:event_btnProfileActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
