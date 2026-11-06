@@ -133,7 +133,7 @@ public class RegistrarHomePanel extends javax.swing.JPanel {
 
         btnOfferings.setBackground(new java.awt.Color(37, 99, 235));
         btnOfferings.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
-        btnOfferings.setForeground(new java.awt.Color(255, 255, 255));
+        btnOfferings.setForeground(new java.awt.Color(153, 0, 255));
         btnOfferings.setText("Offerings");
         btnOfferings.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
