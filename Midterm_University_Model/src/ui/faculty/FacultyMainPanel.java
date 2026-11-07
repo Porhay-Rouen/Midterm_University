@@ -4,6 +4,9 @@
  */
 package ui.faculty;
 
+import access.Session;
+import app.AppContext;
+
 /**
  *
  * @author muykhim
@@ -13,10 +16,38 @@ public class FacultyMainPanel extends javax.swing.JPanel {
     /**
      * Creates new form FacultyMainPanel
      */
+    private AppContext ctx;
+    private Session session;
+    private static final java.awt.Color ACTIVE = new java.awt.Color(37, 99, 235);
+    private static final java.awt.Color INACTIVE = new java.awt.Color(100, 116, 139);
+    
     public FacultyMainPanel() {
         initComponents();
     }
+    
+    public FacultyMainPanel(AppContext ctx, Session session) {
+    this();
+    session.requireRole(model.person.Role.Type.FACULTY);
+    this.ctx = ctx;
+    this.session = session;
+    workArea.add(new MyCoursesPanel(ctx, session), "My Courses");
+    workArea.add(new ui.main.PlaceholderPanel("Students"), "Students");
+    workArea.add(new ui.main.PlaceholderPanel("Grading"), "Grading");
+    workArea.add(new ui.main.PlaceholderPanel("Reports"), "Reports");
+    workArea.add(new ui.main.PlaceholderPanel("Profile"), "Profile");
+    showPage("My Courses", btnMyCourses);
+    }
 
+    
+    /** Shows one page, updates the title, and highlights the active nav button. */
+   private void showPage(String name, javax.swing.JButton activeButton) {
+    ((java.awt.CardLayout) workArea.getLayout()).show(workArea, name);
+    lblTitle.setText("Faculty: " + name);
+    for (java.awt.Component c : ControlPanel.getComponents()) {
+        c.setBackground(INACTIVE);
+    }
+    activeButton.setBackground(ACTIVE);
+}
     /**
      * This method is called from within the constructor to initialize the form.
      * WARNING: Do NOT modify this code. The content of this method is always
@@ -27,21 +58,21 @@ public class FacultyMainPanel extends javax.swing.JPanel {
     private void initComponents() {
 
         jPanel1 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
+        lblTitle = new javax.swing.JLabel();
         btnLogOut = new javax.swing.JButton();
         ControlPanel = new javax.swing.JPanel();
-        jButton1 = new javax.swing.JButton();
-        jButton2 = new javax.swing.JButton();
-        jButton3 = new javax.swing.JButton();
-        jButton4 = new javax.swing.JButton();
-        jButton5 = new javax.swing.JButton();
+        btnMyCourses = new javax.swing.JButton();
+        btnStudents = new javax.swing.JButton();
+        btnGrading = new javax.swing.JButton();
+        btnReports = new javax.swing.JButton();
+        btnProfile = new javax.swing.JButton();
         workArea = new javax.swing.JPanel();
 
         jPanel1.setBackground(new java.awt.Color(204, 0, 255));
 
-        jLabel1.setFont(new java.awt.Font("Helvetica Neue", 1, 13)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel1.setText("Faculty: My Courses");
+        lblTitle.setFont(new java.awt.Font("Helvetica Neue", 1, 13)); // NOI18N
+        lblTitle.setForeground(new java.awt.Color(255, 255, 255));
+        lblTitle.setText("Faculty: My Courses");
 
         btnLogOut.setText("Log Out");
         btnLogOut.addActionListener(new java.awt.event.ActionListener() {
@@ -56,8 +87,8 @@ public class FacultyMainPanel extends javax.swing.JPanel {
             jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(14, 14, 14)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 860, Short.MAX_VALUE)
+                .addComponent(lblTitle)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 160, Short.MAX_VALUE)
                 .addComponent(btnLogOut)
                 .addGap(22, 22, 22))
         );
@@ -66,22 +97,67 @@ public class FacultyMainPanel extends javax.swing.JPanel {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(11, 11, 11)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
+                    .addComponent(lblTitle)
                     .addComponent(btnLogOut))
                 .addContainerGap(16, Short.MAX_VALUE))
         );
 
         ControlPanel.setBackground(new java.awt.Color(255, 255, 255));
 
-        jButton1.setText("My Courses");
+        btnMyCourses.setBackground(new java.awt.Color(100, 116, 139));
+        btnMyCourses.setForeground(new java.awt.Color(255, 255, 255));
+        btnMyCourses.setText("My Courses");
+        btnMyCourses.setBorderPainted(false);
+        btnMyCourses.setOpaque(true);
+        btnMyCourses.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnMyCoursesActionPerformed(evt);
+            }
+        });
 
-        jButton2.setText("Students");
+        btnStudents.setBackground(new java.awt.Color(100, 116, 139));
+        btnStudents.setForeground(new java.awt.Color(255, 255, 255));
+        btnStudents.setText("Students");
+        btnStudents.setBorderPainted(false);
+        btnStudents.setOpaque(true);
+        btnStudents.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnStudentsActionPerformed(evt);
+            }
+        });
 
-        jButton3.setText("Grading");
+        btnGrading.setBackground(new java.awt.Color(100, 116, 139));
+        btnGrading.setForeground(new java.awt.Color(255, 255, 255));
+        btnGrading.setText("Grading");
+        btnGrading.setBorderPainted(false);
+        btnGrading.setOpaque(true);
+        btnGrading.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnGradingActionPerformed(evt);
+            }
+        });
 
-        jButton4.setText("Reports");
+        btnReports.setBackground(new java.awt.Color(100, 116, 139));
+        btnReports.setForeground(new java.awt.Color(255, 255, 255));
+        btnReports.setText("Reports");
+        btnReports.setBorderPainted(false);
+        btnReports.setOpaque(true);
+        btnReports.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnReportsActionPerformed(evt);
+            }
+        });
 
-        jButton5.setText("Profile");
+        btnProfile.setBackground(new java.awt.Color(100, 116, 139));
+        btnProfile.setForeground(new java.awt.Color(255, 255, 255));
+        btnProfile.setText("Profile");
+        btnProfile.setBorderPainted(false);
+        btnProfile.setOpaque(true);
+        btnProfile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnProfileActionPerformed(evt);
+            }
+        });
 
         javax.swing.GroupLayout ControlPanelLayout = new javax.swing.GroupLayout(ControlPanel);
         ControlPanel.setLayout(ControlPanelLayout);
@@ -90,27 +166,27 @@ public class FacultyMainPanel extends javax.swing.JPanel {
             .addGroup(ControlPanelLayout.createSequentialGroup()
                 .addGap(19, 19, 19)
                 .addGroup(ControlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(jButton1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton3, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(jButton5, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                    .addComponent(btnMyCourses, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnStudents, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnGrading, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnReports, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addComponent(btnProfile, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
                 .addContainerGap(31, Short.MAX_VALUE))
         );
         ControlPanelLayout.setVerticalGroup(
             ControlPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(ControlPanelLayout.createSequentialGroup()
                 .addGap(58, 58, 58)
-                .addComponent(jButton1, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnMyCourses, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
-                .addComponent(jButton2, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnStudents, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton3, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnGrading, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton4, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(btnReports, javax.swing.GroupLayout.PREFERRED_SIZE, 84, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jButton5, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(140, Short.MAX_VALUE))
+                .addComponent(btnProfile, javax.swing.GroupLayout.PREFERRED_SIZE, 83, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
 
         workArea.setBackground(new java.awt.Color(255, 255, 255));
@@ -140,20 +216,51 @@ public class FacultyMainPanel extends javax.swing.JPanel {
 
     private void btnLogOutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLogOutActionPerformed
         // TODO add your handling code here:
+        ctx.getAccessControl().logout(session);
+        java.awt.Window window = javax.swing.SwingUtilities.getWindowAncestor(this);
+        if (window != null) {
+            window.dispose();
+        }
+        new ui.login.LoginFrame(ctx).setVisible(true);
         
     }//GEN-LAST:event_btnLogOutActionPerformed
+
+    private void btnMyCoursesActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnMyCoursesActionPerformed
+        // TODO add your handling code here:
+        showPage("My Courses", btnMyCourses);
+    }//GEN-LAST:event_btnMyCoursesActionPerformed
+
+    private void btnStudentsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnStudentsActionPerformed
+        // TODO add your handling code here:
+        showPage("Students", btnStudents);
+    }//GEN-LAST:event_btnStudentsActionPerformed
+
+    private void btnGradingActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnGradingActionPerformed
+        // TODO add your handling code here:
+        showPage("Grading", btnGrading);
+    }//GEN-LAST:event_btnGradingActionPerformed
+
+    private void btnReportsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReportsActionPerformed
+        // TODO add your handling code here:
+        showPage("Reports", btnReports);
+    }//GEN-LAST:event_btnReportsActionPerformed
+
+    private void btnProfileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProfileActionPerformed
+        // TODO add your handling code here:
+        showPage("Profile", btnProfile);
+    }//GEN-LAST:event_btnProfileActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JPanel ControlPanel;
+    private javax.swing.JButton btnGrading;
     private javax.swing.JButton btnLogOut;
-    private javax.swing.JButton jButton1;
-    private javax.swing.JButton jButton2;
-    private javax.swing.JButton jButton3;
-    private javax.swing.JButton jButton4;
-    private javax.swing.JButton jButton5;
-    private javax.swing.JLabel jLabel1;
+    private javax.swing.JButton btnMyCourses;
+    private javax.swing.JButton btnProfile;
+    private javax.swing.JButton btnReports;
+    private javax.swing.JButton btnStudents;
     private javax.swing.JPanel jPanel1;
+    private javax.swing.JLabel lblTitle;
     private javax.swing.JPanel workArea;
     // End of variables declaration//GEN-END:variables
 }
