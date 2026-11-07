@@ -15,6 +15,7 @@ import javax.swing.JButton;
 
 /**
  * Student home screen: header, nav buttons, and a CardLayout content area.
+ * Built with AI coaching (Claude): concepts and code patterns explained step by step; typed, tested, and debugged by Brendan Gilbert.
  *
  * @author Brendan Gilbert
  */
@@ -41,7 +42,7 @@ public class StudentHomePanel extends javax.swing.JPanel {
         lblUser.setText("Signed in as " + session.getPerson().getFullName());
 
         // Stack the pages into the content area, each with a name tag
-        pnlContent.add(new PlaceholderPanel("Register"), "Register");
+        pnlContent.add(new RegisterPanel(ctx, session), "Register");
         pnlContent.add(new PlaceholderPanel("Coursework"), "Coursework");
         pnlContent.add(new PlaceholderPanel("Transcript"), "Transcript");
         pnlContent.add(new PlaceholderPanel("Grad. Audit"), "Grad. Audit");
