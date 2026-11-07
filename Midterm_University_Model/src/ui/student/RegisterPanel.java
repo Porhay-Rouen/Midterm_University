@@ -18,14 +18,13 @@ import model.record.CourseLoad;
 import javax.swing.JOptionPane;
 
 /**
+ * Built with AI coaching (Claude): concepts and code patterns explained step by
+ * step; typed, tested, and debugged by Brendan Gilbert.
  *
- * @author brendangilbert
+ * @author Brendan Gilbert
  */
 public class RegisterPanel extends javax.swing.JPanel {
 
-    /**
-     * Creates new form RegisterPanel
-     */
     private AppContext ctx;
     private Session session;
 
@@ -121,7 +120,8 @@ public class RegisterPanel extends javax.swing.JPanel {
     }
 
     /**
-     * Builds the Register page for the logged-in student.
+     * Builds the Register page for the logged-in student: checks the role,
+     * loads the semesters, and shows that semester's course offerings.
      */
     public RegisterPanel(AppContext ctx, Session session) {
         this();
@@ -258,10 +258,14 @@ public class RegisterPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnShowAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowAllActionPerformed
+        // Clears any search and lists every offering for the selected semester
+
         showAll();
     }//GEN-LAST:event_btnShowAllActionPerformed
 
     private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
+        // Runs the search picked in "Search by" (course ID, teacher, or course name) and shows the results in the same table
+
         String keyword = txtSearch.getText().trim();          // trim() drops extra spaces
         if (keyword.isEmpty()) {
             JOptionPane.showMessageDialog(this, "Type something to search for, or click Show All.");
@@ -290,10 +294,14 @@ public class RegisterPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_btnSearchActionPerformed
 
     private void txtSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchActionPerformed
+        // Pressing Return in the search box does the same thing as clicking Search
+
         btnSearch.doClick();
     }//GEN-LAST:event_txtSearchActionPerformed
 
     private void btnEnrollActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEnrollActionPerformed
+        // Enrolls the student in the selected offering; the model enforces the rules (8-credit max, already enrolled, seats, enrollment open)
+
         CourseOffering o = selectedOffering();
         if (o == null) {
             return;
@@ -310,10 +318,14 @@ public class RegisterPanel extends javax.swing.JPanel {
     }//GEN-LAST:event_btnEnrollActionPerformed
 
     private void cmbSemesterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbSemesterActionPerformed
+        // Reloads the table and credit count when a different semester is picked
+
         showAll();
     }//GEN-LAST:event_cmbSemesterActionPerformed
 
     private void btnDropActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDropActionPerformed
+        // Drops the selected offering after checking enrollment and asking for confirmation; the model handles refunds if it was paid
+
         CourseOffering o = selectedOffering();
         if (o == null) {
             return;

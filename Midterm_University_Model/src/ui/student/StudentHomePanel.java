@@ -15,6 +15,7 @@ import javax.swing.JButton;
 
 /**
  * Student home screen: header, nav buttons, and a CardLayout content area.
+ * Built with AI coaching (Claude): concepts and code patterns explained step by step; typed, tested, and debugged by Brendan Gilbert.
  *
  * @author Brendan Gilbert
  */
