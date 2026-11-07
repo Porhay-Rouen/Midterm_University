@@ -25,11 +25,63 @@ public class DashboardPanel extends javax.swing.JPanel {
 
     // Used by MainFrame after login
     public DashboardPanel(AppContext ctx, Session session) {
-    this();
-    session.requireRole(model.person.Role.Type.ADMIN);
-    this.ctx = ctx;
-    this.session = session;
+        this();
+        session.requireRole(model.person.Role.Type.ADMIN);
+        this.ctx = ctx;
+        this.session = session;
+
+        loadData();
+
+        // reload every time this page is shown, so the numbers are never old
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            @Override
+            public void componentShown(java.awt.event.ComponentEvent e) {
+                loadData();
+            }
+        });
     }
+    
+        /** A table model whose cells users cannot type into. */
+    private javax.swing.table.DefaultTableModel newModel(String... columns) {
+        return new javax.swing.table.DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+    }
+
+    /** Reads the reports from the model and fills the four tables. */
+    private void loadData() {
+        // 1. Active users by role
+        javax.swing.table.DefaultTableModel users = newModel("Role", "Active users");
+        for (java.util.Map.Entry<String, Integer> e : ctx.getReports().activeUsersByRole().entrySet()) {
+            users.addRow(new Object[]{e.getKey(), e.getValue()});
+        }
+        tblUsers.setModel(users);
+
+        // 2. Courses offered per semester
+        javax.swing.table.DefaultTableModel semesters = newModel("Semester", "Courses offered");
+        for (java.util.Map.Entry<String, Integer> e : ctx.getReports().coursesOfferedPerSemester().entrySet()) {
+            semesters.addRow(new Object[]{e.getKey(), e.getValue()});
+        }
+        tblSemesters.setModel(semesters);
+
+        // 3. Enrolled students per course
+        javax.swing.table.DefaultTableModel enrolled = newModel(
+                "Semester", "Course ID", "Course name", "Faculty", "Enrolled", "Capacity");
+        for (Object[] row : ctx.getReports().enrolledPerCourse()) {
+            enrolled.addRow(row);
+        }
+        tblEnrolled.setModel(enrolled);
+
+        // 4. Tuition revenue
+        javax.swing.table.DefaultTableModel revenue = newModel("Report", "Value");
+        revenue.addRow(new Object[]{"Total tuition collected",
+            String.format("$%,.2f", ctx.getReports().tuitionRevenueTotal())});
+        tblRevenue.setModel(revenue);
+    }
+
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -40,21 +92,204 @@ public class DashboardPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jLabel1 = new javax.swing.JLabel();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        tblSemesters = new javax.swing.JTable();
+        jScrollPane3 = new javax.swing.JScrollPane();
+        tblUsers = new javax.swing.JTable();
+        jScrollPane4 = new javax.swing.JScrollPane();
+        tblRevenue = new javax.swing.JTable();
+        jScrollPane5 = new javax.swing.JScrollPane();
+        tblEnrolled = new javax.swing.JTable();
+        jLabel2 = new javax.swing.JLabel();
+        jLabel3 = new javax.swing.JLabel();
+        jLabel4 = new javax.swing.JLabel();
+        jLabel5 = new javax.swing.JLabel();
+
         setBackground(new java.awt.Color(255, 255, 255));
+
+        jLabel1.setFont(new java.awt.Font("Helvetica Neue", 1, 18)); // NOI18N
+        jLabel1.setText("Admin Dashboard");
+
+        tblSemesters.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null},
+                {null, null, null},
+                {null, null, null},
+                {null, null, null}
+            },
+            new String [] {
+                "Semester", "Total Courses", "Active"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane2.setViewportView(tblSemesters);
+        if (tblSemesters.getColumnModel().getColumnCount() > 0) {
+            tblSemesters.getColumnModel().getColumn(0).setResizable(false);
+            tblSemesters.getColumnModel().getColumn(1).setResizable(false);
+            tblSemesters.getColumnModel().getColumn(2).setResizable(false);
+            tblSemesters.getColumnModel().getColumn(2).setHeaderValue("Active");
+        }
+
+        tblUsers.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null},
+                {null, null, null},
+                {null, null, null},
+                {null, null, null}
+            },
+            new String [] {
+                "Role", "Count", "Percentage"
+            }
+        ));
+        jScrollPane3.setViewportView(tblUsers);
+        if (tblUsers.getColumnModel().getColumnCount() > 0) {
+            tblUsers.getColumnModel().getColumn(0).setResizable(false);
+            tblUsers.getColumnModel().getColumn(1).setResizable(false);
+            tblUsers.getColumnModel().getColumn(2).setResizable(false);
+            tblUsers.getColumnModel().getColumn(2).setHeaderValue("Active");
+        }
+
+        tblRevenue.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null},
+                {null, null},
+                {null, null},
+                {null, null}
+            },
+            new String [] {
+                "Semester", "Revenue"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane4.setViewportView(tblRevenue);
+        if (tblRevenue.getColumnModel().getColumnCount() > 0) {
+            tblRevenue.getColumnModel().getColumn(0).setResizable(false);
+            tblRevenue.getColumnModel().getColumn(1).setResizable(false);
+        }
+
+        tblEnrolled.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null},
+                {null, null, null},
+                {null, null, null},
+                {null, null, null}
+            },
+            new String [] {
+                "Course", "Title", "Enrolled"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        jScrollPane5.setViewportView(tblEnrolled);
+        if (tblEnrolled.getColumnModel().getColumnCount() > 0) {
+            tblEnrolled.getColumnModel().getColumn(0).setResizable(false);
+            tblEnrolled.getColumnModel().getColumn(1).setResizable(false);
+            tblEnrolled.getColumnModel().getColumn(2).setResizable(false);
+            tblEnrolled.getColumnModel().getColumn(2).setHeaderValue("Active");
+        }
+
+        jLabel2.setFont(new java.awt.Font("Helvetica Neue", 1, 13)); // NOI18N
+        jLabel2.setText("Active User by Role");
+
+        jLabel3.setFont(new java.awt.Font("Helvetica Neue", 1, 13)); // NOI18N
+        jLabel3.setText("Course Offered per Semester");
+
+        jLabel4.setFont(new java.awt.Font("Helvetica Neue", 1, 13)); // NOI18N
+        jLabel4.setText("Enrolled Student per Course");
+
+        jLabel5.setFont(new java.awt.Font("Helvetica Neue", 1, 13)); // NOI18N
+        jLabel5.setText("$ Tuition Revenue");
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 526, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(40, 40, 40)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.DEFAULT_SIZE, 404, Short.MAX_VALUE)
+                    .addComponent(jLabel2)
+                    .addComponent(jLabel4)
+                    .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 0, Short.MAX_VALUE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 150, Short.MAX_VALUE)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                        .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 412, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(94, 94, 94))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addComponent(jLabel5)
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 412, javax.swing.GroupLayout.PREFERRED_SIZE)
+                            .addComponent(jLabel3))
+                        .addContainerGap())))
+            .addGroup(layout.createSequentialGroup()
+                .addGap(403, 403, 403)
+                .addComponent(jLabel1)
+                .addGap(0, 0, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 448, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addGap(28, 28, 28)
+                .addComponent(jLabel1)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(jLabel3))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addComponent(jScrollPane3, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 233, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addGap(18, 18, 18)
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(7, 7, 7)
+                        .addComponent(jLabel4)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                        .addComponent(jScrollPane5, javax.swing.GroupLayout.PREFERRED_SIZE, 247, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(layout.createSequentialGroup()
+                        .addComponent(jLabel5)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(jScrollPane4, javax.swing.GroupLayout.PREFERRED_SIZE, 247, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                .addContainerGap(92, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JScrollPane jScrollPane3;
+    private javax.swing.JScrollPane jScrollPane4;
+    private javax.swing.JScrollPane jScrollPane5;
+    private javax.swing.JTable tblEnrolled;
+    private javax.swing.JTable tblRevenue;
+    private javax.swing.JTable tblSemesters;
+    private javax.swing.JTable tblUsers;
     // End of variables declaration//GEN-END:variables
 }
