@@ -1,19 +1,25 @@
 /*
- * Registrar home screen. Same design as the student panel (colored header with
- * "Role: Page" title and Log Out), with tabs for the 5 registrar pages.
+ * Registrar home screen: green header, nav buttons on the left,
+ * and a CardLayout area on the right that shows one page at a time.
  */
 package ui.registrar;
 
 import access.Session;
 import app.AppContext;
+import java.awt.CardLayout;
+import java.awt.Color;
+import javax.swing.JButton;
 import model.person.Role;
 
 /**
- * Registrar home screen: header bar on top, one tab per registrar page.
+ * Registrar home screen (header, nav, cards).
  *
  * @author raene
  */
 public class RegistrarHomePanel extends javax.swing.JPanel {
+
+    private static final Color BLUE = new Color(37, 99, 235);
+    private static final Color GRAY = new Color(100, 116, 139);
 
     private AppContext ctx;
     private Session session;
@@ -29,21 +35,26 @@ public class RegistrarHomePanel extends javax.swing.JPanel {
         this.ctx = ctx;
         this.session = session;
 
-        // One tab per registrar page
-        tabPages.addTab("Offerings", new RegOfferingsPanel(ctx, session));
-        tabPages.addTab("Enrollment", new RegEnrollmentPanel(ctx, session));
-        tabPages.addTab("Finance", new RegFinancePanel(ctx, session));
-        tabPages.addTab("Reports", new RegReportsPanel(ctx, session));
-        tabPages.addTab("Profile", new RegProfilePanel(ctx, session));
-        tabPages.setSelectedIndex(0);
-        updateTitle();
+        // Put the 5 pages into the CardLayout panel, each with a name
+        pnlContent.add(new RegOfferingsPanel(ctx, session), "Offerings");
+        pnlContent.add(new RegEnrollmentPanel(ctx, session), "Enrollment");
+        pnlContent.add(new RegFinancePanel(ctx, session), "Finance");
+        pnlContent.add(new RegReportsPanel(ctx, session), "Reports");
+        pnlContent.add(new RegProfilePanel(ctx, session), "Profile");
+
+        lblUser.setText("Signed in as " + session.getPerson().getFullName());
+        showPage("Offerings");
     }
 
-    /** Header shows "Registrar: <tab name>", like "Student: Register". */
-    private void updateTitle() {
-        int i = tabPages.getSelectedIndex();
-        if (i >= 0) {
-            lblTitle.setText("Registrar: " + tabPages.getTitleAt(i));
+    /** Shows one page, changes the header title, and colors the active nav button blue. */
+    private void showPage(String name) {
+        ((CardLayout) pnlContent.getLayout()).show(pnlContent, name);
+        lblTitle.setText("Registrar: " + name);
+
+        JButton[] buttons = {btnOfferings, btnEnrollment, btnFinance, btnReports, btnProfile};
+        String[] names = {"Offerings", "Enrollment", "Finance", "Reports", "Profile"};
+        for (int i = 0; i < buttons.length; i++) {
+            buttons[i].setBackground(names[i].equals(name) ? BLUE : GRAY);
         }
     }
 
@@ -56,19 +67,27 @@ public class RegistrarHomePanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jPanel1 = new javax.swing.JPanel();
         pnlHeader = new javax.swing.JPanel();
         lblTitle = new javax.swing.JLabel();
         btnLogOut = new javax.swing.JButton();
-        tabPages = new javax.swing.JTabbedPane();
+        lblUser = new javax.swing.JLabel();
+        pnlBody = new javax.swing.JPanel();
+        pnlContent = new javax.swing.JPanel();
+        pnlNav = new javax.swing.JPanel();
+        btnOfferings = new javax.swing.JButton();
+        btnEnrollment = new javax.swing.JButton();
+        btnFinance = new javax.swing.JButton();
+        btnReports = new javax.swing.JButton();
+        btnProfile = new javax.swing.JButton();
 
-        setBackground(new java.awt.Color(255, 255, 255));
         setLayout(new java.awt.BorderLayout());
 
         pnlHeader.setBackground(new java.awt.Color(0, 204, 102));
 
         lblTitle.setFont(new java.awt.Font("Helvetica Neue", 1, 13)); // NOI18N
         lblTitle.setForeground(new java.awt.Color(255, 255, 255));
-        lblTitle.setText("Registrar: Offerings");
+        lblTitle.setText("Registrar : Offerings");
 
         btnLogOut.setText("Log Out");
         btnLogOut.addActionListener(new java.awt.event.ActionListener() {
@@ -77,6 +96,9 @@ public class RegistrarHomePanel extends javax.swing.JPanel {
             }
         });
 
+        lblUser.setForeground(new java.awt.Color(255, 255, 255));
+        lblUser.setText("jLabel1");
+
         javax.swing.GroupLayout pnlHeaderLayout = new javax.swing.GroupLayout(pnlHeader);
         pnlHeader.setLayout(pnlHeaderLayout);
         pnlHeaderLayout.setHorizontalGroup(
@@ -84,7 +106,9 @@ public class RegistrarHomePanel extends javax.swing.JPanel {
             .addGroup(pnlHeaderLayout.createSequentialGroup()
                 .addGap(14, 14, 14)
                 .addComponent(lblTitle)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 344, Short.MAX_VALUE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addComponent(lblUser)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(btnLogOut)
                 .addContainerGap())
         );
@@ -94,19 +118,92 @@ public class RegistrarHomePanel extends javax.swing.JPanel {
                 .addGap(11, 11, 11)
                 .addGroup(pnlHeaderLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblTitle)
-                    .addComponent(btnLogOut))
+                    .addComponent(btnLogOut)
+                    .addComponent(lblUser))
                 .addContainerGap(16, Short.MAX_VALUE))
         );
 
-        add(pnlHeader, java.awt.BorderLayout.NORTH);
+        pnlBody.setBackground(new java.awt.Color(255, 255, 255));
+        pnlBody.setLayout(new java.awt.BorderLayout());
 
-        tabPages.setBackground(new java.awt.Color(255, 255, 255));
-        tabPages.addChangeListener(new javax.swing.event.ChangeListener() {
-            public void stateChanged(javax.swing.event.ChangeEvent evt) {
-                tabPagesStateChanged(evt);
+        pnlContent.setLayout(new java.awt.CardLayout());
+        pnlBody.add(pnlContent, java.awt.BorderLayout.CENTER);
+
+        pnlNav.setLayout(new java.awt.GridLayout(5, 1, 0, 8));
+
+        btnOfferings.setBackground(new java.awt.Color(37, 99, 235));
+        btnOfferings.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnOfferings.setForeground(new java.awt.Color(255, 255, 255));
+        btnOfferings.setText("Offerings");
+        btnOfferings.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnOfferingsActionPerformed(evt);
             }
         });
-        add(tabPages, java.awt.BorderLayout.CENTER);
+        pnlNav.add(btnOfferings);
+
+        btnEnrollment.setBackground(new java.awt.Color(100, 116, 139));
+        btnEnrollment.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnEnrollment.setForeground(new java.awt.Color(255, 255, 255));
+        btnEnrollment.setText("Enrollment");
+        btnEnrollment.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEnrollmentActionPerformed(evt);
+            }
+        });
+        pnlNav.add(btnEnrollment);
+
+        btnFinance.setBackground(new java.awt.Color(100, 116, 139));
+        btnFinance.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnFinance.setForeground(new java.awt.Color(255, 255, 255));
+        btnFinance.setText("Finance");
+        btnFinance.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnFinanceActionPerformed(evt);
+            }
+        });
+        pnlNav.add(btnFinance);
+
+        btnReports.setBackground(new java.awt.Color(100, 116, 139));
+        btnReports.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnReports.setForeground(new java.awt.Color(255, 255, 255));
+        btnReports.setText("Reports");
+        btnReports.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnReportsActionPerformed(evt);
+            }
+        });
+        pnlNav.add(btnReports);
+
+        btnProfile.setBackground(new java.awt.Color(100, 116, 139));
+        btnProfile.setFont(new java.awt.Font("Segoe UI", 1, 12)); // NOI18N
+        btnProfile.setForeground(new java.awt.Color(255, 255, 255));
+        btnProfile.setText("Profile");
+        btnProfile.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnProfileActionPerformed(evt);
+            }
+        });
+        pnlNav.add(btnProfile);
+
+        pnlBody.add(pnlNav, java.awt.BorderLayout.WEST);
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(pnlBody, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(pnlHeader, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addComponent(pnlHeader, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(pnlBody, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+        );
+
+        add(jPanel1, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
 
     private void btnLogOutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLogOutActionPerformed
@@ -115,17 +212,43 @@ public class RegistrarHomePanel extends javax.swing.JPanel {
         if (window != null) {
             window.dispose();                                    // closes MainFrame
         }
-        new ui.login.LoginFrame(ctx).setVisible(true);
+        new ui.login.LoginFrame(ctx).setVisible(true);    
     }//GEN-LAST:event_btnLogOutActionPerformed
 
-    private void tabPagesStateChanged(javax.swing.event.ChangeEvent evt) {//GEN-FIRST:event_tabPagesStateChanged
-        updateTitle();
-    }//GEN-LAST:event_tabPagesStateChanged
+    private void btnOfferingsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnOfferingsActionPerformed
+        showPage("Offerings");
+    }//GEN-LAST:event_btnOfferingsActionPerformed
+
+    private void btnEnrollmentActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEnrollmentActionPerformed
+        showPage("Enrollment");
+    }//GEN-LAST:event_btnEnrollmentActionPerformed
+
+    private void btnFinanceActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFinanceActionPerformed
+        showPage("Finance");
+    }//GEN-LAST:event_btnFinanceActionPerformed
+
+    private void btnReportsActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnReportsActionPerformed
+        showPage("Reports");
+    }//GEN-LAST:event_btnReportsActionPerformed
+
+    private void btnProfileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProfileActionPerformed
+        showPage("Profile");
+    }//GEN-LAST:event_btnProfileActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnEnrollment;
+    private javax.swing.JButton btnFinance;
     private javax.swing.JButton btnLogOut;
+    private javax.swing.JButton btnOfferings;
+    private javax.swing.JButton btnProfile;
+    private javax.swing.JButton btnReports;
+    private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel lblTitle;
+    private javax.swing.JLabel lblUser;
+    private javax.swing.JPanel pnlBody;
+    private javax.swing.JPanel pnlContent;
     private javax.swing.JPanel pnlHeader;
-    private javax.swing.JTabbedPane tabPages;
+    private javax.swing.JPanel pnlNav;
     // End of variables declaration//GEN-END:variables
 }
