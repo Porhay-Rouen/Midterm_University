@@ -1,6 +1,0 @@
-# NetBeans settings that are different on every computer - never commit these
-nbproject/private/
-
-# Build output (NetBeans recreates these on Clean and Build)
-build/
-dist/
