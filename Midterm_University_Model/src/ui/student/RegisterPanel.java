@@ -15,6 +15,7 @@ import model.course.CourseSchedule;
 import model.course.Semester;
 import model.person.StudentRole;
 import model.record.CourseLoad;
+import javax.swing.JOptionPane;
 
 /**
  *
@@ -167,9 +168,19 @@ public class RegisterPanel extends javax.swing.JPanel {
         pnlSearch.add(cmbSearchBy);
 
         txtSearch.setColumns(15);
+        txtSearch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtSearchActionPerformed(evt);
+            }
+        });
         pnlSearch.add(txtSearch);
 
         btnSearch.setText("Search");
+        btnSearch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSearchActionPerformed(evt);
+            }
+        });
         pnlSearch.add(btnSearch);
 
         btnShowAll.setText("Show All");
@@ -221,6 +232,38 @@ public class RegisterPanel extends javax.swing.JPanel {
     private void btnShowAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowAllActionPerformed
         showAll();
     }//GEN-LAST:event_btnShowAllActionPerformed
+
+    private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
+        String keyword = txtSearch.getText().trim();          // trim() drops extra spaces
+        if (keyword.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Type something to search for, or click Show All.");
+            return;
+        }
+        CourseSchedule schedule = currentSchedule();
+        if (schedule == null) {
+            JOptionPane.showMessageDialog(this, "No courses are offered this semester.");
+            return;
+        }
+
+        String searchBy = (String) cmbSearchBy.getSelectedItem();
+        List<CourseOffering> results;
+        if (searchBy.equals("Course ID")) {
+            results = schedule.searchByCourseId(keyword);
+        } else if (searchBy.equals("Teacher")) {
+            results = schedule.searchByTeacher(keyword);
+        } else {
+            results = schedule.searchByCourseName(keyword);
+        }
+
+        refreshTable(results);
+        if (results.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No courses match \"" + keyword + "\".");
+        }
+    }//GEN-LAST:event_btnSearchActionPerformed
+
+    private void txtSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchActionPerformed
+        btnSearch.doClick();
+    }//GEN-LAST:event_txtSearchActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
