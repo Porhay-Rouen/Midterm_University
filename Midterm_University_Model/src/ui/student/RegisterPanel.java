@@ -19,7 +19,7 @@ import javax.swing.JOptionPane;
 
 /**
  *
- * @author macbookpro
+ * @author brendangilbert
  */
 public class RegisterPanel extends javax.swing.JPanel {
 
@@ -108,7 +108,20 @@ public class RegisterPanel extends javax.swing.JPanel {
     }
 
     /**
-     * Require student role for login
+     * The offering in the selected row, or null (after a message) if no row is
+     * selected.
+     */
+    private CourseOffering selectedOffering() {
+        int row = tblOfferings.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Select a course in the table first.");
+            return null;
+        }
+        return shown.get(row);
+    }
+
+    /**
+     * Builds the Register page for the logged-in student.
      */
     public RegisterPanel(AppContext ctx, Session session) {
         this();
@@ -159,6 +172,11 @@ public class RegisterPanel extends javax.swing.JPanel {
         lblSemester.setText("Semester:");
         pnlSearch.add(lblSemester);
 
+        cmbSemester.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbSemesterActionPerformed(evt);
+            }
+        });
         pnlSearch.add(cmbSemester);
 
         lblSearchBy.setText("Search by:");
@@ -221,9 +239,19 @@ public class RegisterPanel extends javax.swing.JPanel {
         pnlActions.add(lblCredits);
 
         btnEnroll.setText("Enroll");
+        btnEnroll.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEnrollActionPerformed(evt);
+            }
+        });
         pnlActions.add(btnEnroll);
 
         btnDrop.setText("Drop");
+        btnDrop.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDropActionPerformed(evt);
+            }
+        });
         pnlActions.add(btnDrop);
 
         add(pnlActions, java.awt.BorderLayout.SOUTH);
@@ -264,6 +292,55 @@ public class RegisterPanel extends javax.swing.JPanel {
     private void txtSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchActionPerformed
         btnSearch.doClick();
     }//GEN-LAST:event_txtSearchActionPerformed
+
+    private void btnEnrollActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEnrollActionPerformed
+        CourseOffering o = selectedOffering();
+        if (o == null) {
+            return;
+        }
+        try {
+            student.enroll(o);
+            JOptionPane.showMessageDialog(this, "Enrolled in " + o.getCourse().getCourseId()
+                    + ". Tuition was added to your balance.");
+            refreshTable(shown);   // same rows, fresh seat counts and status
+            updateCredits();
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Can't enroll", JOptionPane.WARNING_MESSAGE);
+        }
+    }//GEN-LAST:event_btnEnrollActionPerformed
+
+    private void cmbSemesterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbSemesterActionPerformed
+        showAll();
+    }//GEN-LAST:event_cmbSemesterActionPerformed
+
+    private void btnDropActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDropActionPerformed
+        CourseOffering o = selectedOffering();
+        if (o == null) {
+            return;
+        }
+
+        // check enrollment 
+        if (!isEnrolled(o)) {
+            JOptionPane.showMessageDialog(this, "You're not enrolled in " + o.getCourse().getCourseId() + ".");
+            return;
+        }
+
+        // drop confirmation
+        int answer = JOptionPane.showConfirmDialog(this, "Drop " + o.getCourse().getCourseId() + "?",
+                "Confirm Drop", JOptionPane.YES_NO_OPTION);
+        if (answer != JOptionPane.YES_OPTION) {
+            return;   // they clicked No (or closed the window): stop, nothing dropped
+        }
+        try {
+            student.drop(o);
+            JOptionPane.showMessageDialog(this, "Successfully dropped " + o.getCourse().getCourseId()
+                    + ". A refund will be issued for any payments received for " + o.getCourse().getCourseId() + ".");
+            refreshTable(shown);   // same rows, fresh seat counts and status
+            updateCredits();
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Can't drop", JOptionPane.WARNING_MESSAGE);
+        }
+    }//GEN-LAST:event_btnDropActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
