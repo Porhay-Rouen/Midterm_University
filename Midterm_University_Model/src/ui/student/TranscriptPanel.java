@@ -9,7 +9,13 @@ import app.AppContext;
 import java.awt.Color;
 import model.person.Role;
 import model.person.StudentRole;
-
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.table.DefaultTableModel;
+import model.course.SeatAssignment;
+import model.course.Semester;
+import model.record.CourseLoad;
+import model.record.Transcript;
 
 /**
  * Built with AI coaching (Claude): concepts and code patterns explained step by
@@ -23,11 +29,89 @@ public class TranscriptPanel extends javax.swing.JPanel {
     private Session session;
     private StudentRole student;
 
+    private static final String ALL = "All Semesters";
+    private boolean loading = false;   // true while the dropdown is being refilled
+
     /**
      * Creates new form TranscriptPanel
      */
     public TranscriptPanel() {
         initComponents();
+    }
+
+    /**
+     * Rebuilds the page each time it's shown: lock check, dropdown, then the
+     * table.
+     */
+    private void refresh() {
+        DefaultTableModel model = (DefaultTableModel) tblTranscript.getModel();
+        if (!student.canViewTranscript()) {
+            model.setRowCount(0);
+            cmbSemester.setEnabled(false);
+            lblStatus.setText(String.format(
+                    "Transcript locked: pay your $%,.2f balance on the Tuition page to view it.",
+                    student.getBalance()));
+            return;
+        }
+        cmbSemester.setEnabled(true);
+
+        // Refill the dropdown, keeping the current choice if it still exists
+        loading = true;
+        Object previous = cmbSemester.getSelectedItem();
+        cmbSemester.removeAllItems();
+        cmbSemester.addItem(ALL);
+        for (Semester s : student.getTranscript().getSemesters()) {
+            cmbSemester.addItem(s.getName());
+        }
+        if (previous != null) {
+            cmbSemester.setSelectedItem(previous);
+        }
+        loading = false;
+
+        loadTable();
+        lblStatus.setText("IP = in progress. GPAs count final grades only.");
+    }
+
+    /**
+     * The semesters the dropdown asks for: all of them, or just the one picked.
+     */
+    private List<Semester> semestersToShow() {
+        List<Semester> result = new ArrayList<>();
+        String picked = (String) cmbSemester.getSelectedItem();
+        if (picked == null || picked.equals(ALL)) {
+            result.addAll(student.getTranscript().getSemesters());
+        } else {
+            Semester s = ctx.getUniversity().findSemester(picked);
+            if (s != null) {
+                result.add(s);
+            }
+        }
+        return result;
+    }
+
+    /**
+     * Writes one row per course for the chosen semester(s).
+     */
+    private void loadTable() {
+        DefaultTableModel model = (DefaultTableModel) tblTranscript.getModel();
+        model.setRowCount(0);
+        Transcript transcript = student.getTranscript();
+        String overallGpa = transcript.hasGradedCourses()
+                ? String.format("%.2f", transcript.getOverallGPA()) : "—";
+
+        for (Semester sem : semestersToShow()) {
+            CourseLoad load = transcript.findCourseLoad(sem);
+            if (load == null) {
+                continue;   // nothing on the transcript for this term
+            }
+            String termGpa = load.hasGradedCourses()
+                    ? String.format("%.2f", load.getSemesterGPA()) : "—";
+            for (SeatAssignment sa : load.getSeatAssignments()) {
+                model.addRow(new Object[]{
+                    sem.getName(), transcript.getStanding(sem), sa.getCourse().getCourseId(), sa.getCourseOffering().getTitle(), sa.getGrade(), termGpa, overallGpa
+                });
+            }
+        }
     }
 
     /**
@@ -62,6 +146,11 @@ public class TranscriptPanel extends javax.swing.JPanel {
         lblStatus = new javax.swing.JLabel();
 
         setBackground(java.awt.Color.white);
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                formComponentShown(evt);
+            }
+        });
         setLayout(new java.awt.BorderLayout());
 
         pnlFilter.setBackground(java.awt.Color.white);
@@ -70,6 +159,11 @@ public class TranscriptPanel extends javax.swing.JPanel {
         lblSemester.setText("Semester:");
         pnlFilter.add(lblSemester);
 
+        cmbSemester.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbSemesterActionPerformed(evt);
+            }
+        });
         pnlFilter.add(cmbSemester);
 
         add(pnlFilter, java.awt.BorderLayout.NORTH);
@@ -102,6 +196,18 @@ public class TranscriptPanel extends javax.swing.JPanel {
 
         add(pnlStatus, java.awt.BorderLayout.SOUTH);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void formComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
+        // Rebuild the page every time the student opens it (e.g., after paying tuition)
+        refresh();
+    }//GEN-LAST:event_formComponentShown
+
+    private void cmbSemesterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbSemesterActionPerformed
+        // Re-filter the table when a semester is picked (ignored while the dropdown is being refilled)
+        if (!loading) {
+            loadTable();
+        }
+    }//GEN-LAST:event_cmbSemesterActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
