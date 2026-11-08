@@ -46,7 +46,7 @@ public class StudentHomePanel extends javax.swing.JPanel {
         pnlContent.add(new PlaceholderPanel("Coursework"), "Coursework");
         pnlContent.add(new TranscriptPanel(ctx, session), "Transcript");
         pnlContent.add(new PlaceholderPanel("Grad. Audit"), "Grad. Audit");
-        pnlContent.add(new PlaceholderPanel("Tuition"), "Tuition");
+        pnlContent.add(new TuitionPanel(ctx, session), "Tuition");
         pnlContent.add(new PlaceholderPanel("Profile"), "Profile");
 
         showPage("Register", btnRegister);
