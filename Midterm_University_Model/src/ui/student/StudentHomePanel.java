@@ -44,7 +44,7 @@ public class StudentHomePanel extends javax.swing.JPanel {
         // Stack the pages into the content area, each with a name tag
         pnlContent.add(new RegisterPanel(ctx, session), "Register");
         pnlContent.add(new PlaceholderPanel("Coursework"), "Coursework");
-        pnlContent.add(new PlaceholderPanel("Transcript"), "Transcript");
+        pnlContent.add(new TranscriptPanel(ctx, session), "Transcript");
         pnlContent.add(new PlaceholderPanel("Grad. Audit"), "Grad. Audit");
         pnlContent.add(new PlaceholderPanel("Tuition"), "Tuition");
         pnlContent.add(new PlaceholderPanel("Profile"), "Profile");
