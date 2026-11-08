@@ -1,32 +1,91 @@
 /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
+ * registrar profile page. the registrar can see their own info and change
+ * their name, email, phone and office hours. boxes stay locked until you click edit.
+ * made from my page template so it looks like the other pages.
  */
 package ui.registrar;
+
 import access.Session;
 import app.AppContext;
+import javax.swing.JOptionPane;
+import model.person.Person;
+import model.person.RegistrarRole;
 import model.person.Role;
+import model.util.Validation;
 
 /**
+ * registrar profile page
  *
  * @author raene
  */
 public class RegProfilePanel extends javax.swing.JPanel {
+
     private AppContext ctx;
     private Session session;
+    private Person person;
+    private RegistrarRole registrar;
 
-    /**
-     * Creates new form RegProfilePanel
-     */
+    // only used by the netbeans designer
     public RegProfilePanel() {
         initComponents();
     }
-    
-    public RegProfilePanel(AppContext ctx, Session session){
+
+    public RegProfilePanel(AppContext ctx, Session session) {
         this();
-        session.requireRole(Role.Type.REGISTRAR);
+        session.requireRole(Role.Type.REGISTRAR); // only registrars can open this page
         this.ctx = ctx;
         this.session = session;
+        this.person = session.getPerson();
+        this.registrar = (RegistrarRole) session.getRole(); // we know it's a registrar because of the check above
+        loadProfile(); // show my saved info when the page opens
+    }
+
+    // puts my saved info in the boxes and locks them
+    private void loadProfile() {
+        txtId.setText(person.getUniversityId());
+        txtFirst.setText(person.getFirstName());
+        txtLast.setText(person.getLastName());
+        txtEmail.setText(person.getEmail());
+        txtPhone.setText(person.getPhone());
+        txtOfficeHours.setText(registrar.getOfficeHours());
+        setEditing(false);
+    }
+
+    // unlocks the boxes when on is true, locks them when false
+    private void setEditing(boolean on) {
+        txtId.setEditable(false); //  id never changes
+        txtFirst.setEditable(on);
+        txtLast.setEditable(on);
+        txtEmail.setEditable(on);
+        txtPhone.setEditable(on);
+        txtOfficeHours.setEditable(on);
+        btnEdit.setEnabled(!on);
+        btnSave.setEnabled(on);
+        btnCancel.setEnabled(on);
+    }
+
+    // checks everything first, then saves, so nothing gets half saved
+    private void save() {
+        try {
+            String first = Validation.requireText(txtFirst.getText(), "First name");
+            String last = Validation.requireText(txtLast.getText(), "Last name");
+            String email = Validation.requireEmail(txtEmail.getText());
+            String phone = Validation.optionalPhone(txtPhone.getText());
+            Person owner = ctx.getUniversity().findPersonByEmail(email);
+            if (owner != null && owner != person) { // someone else already has this email
+                throw new IllegalArgumentException("Email " + email + " is already used by someone else.");
+            }
+
+            person.setFirstName(first);
+            person.setLastName(last);
+            ctx.getUniversity().changeEmail(person, email);
+            person.setPhone(phone);
+            registrar.setOfficeHours(txtOfficeHours.getText());
+            loadProfile();
+            JOptionPane.showMessageDialog(this, "Profile saved.");
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            JOptionPane.showMessageDialog(this, ex.getMessage(), "Error", JOptionPane.ERROR_MESSAGE);
+        }
     }
 
     /**
@@ -38,21 +97,149 @@ public class RegProfilePanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        setBackground(new java.awt.Color(255, 255, 255));
+        pnlTop = new javax.swing.JPanel();
+        pnlForm = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        txtId = new javax.swing.JTextField();
+        jLabel2 = new javax.swing.JLabel();
+        txtFirst = new javax.swing.JTextField();
+        jLabel3 = new javax.swing.JLabel();
+        txtLast = new javax.swing.JTextField();
+        jLabel4 = new javax.swing.JLabel();
+        txtEmail = new javax.swing.JTextField();
+        jLabel5 = new javax.swing.JLabel();
+        txtPhone = new javax.swing.JTextField();
+        jLabel6 = new javax.swing.JLabel();
+        txtOfficeHours = new javax.swing.JTextField();
+        jLabel7 = new javax.swing.JLabel();
+        pnlButtons = new javax.swing.JPanel();
+        btnEdit = new javax.swing.JButton();
+        btnSave = new javax.swing.JButton();
+        btnCancel = new javax.swing.JButton();
+        pnlBottom = new javax.swing.JPanel();
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
-        );
+        setBackground(java.awt.Color.white);
+        setLayout(new java.awt.BorderLayout());
+
+        pnlTop.setBackground(java.awt.Color.white);
+        pnlTop.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+
+        pnlForm.setBackground(java.awt.Color.white);
+        pnlForm.setLayout(new java.awt.GridLayout(7, 2, 8, 8));
+
+        jLabel1.setText("University ID:");
+        pnlForm.add(jLabel1);
+
+        txtId.setColumns(20);
+        txtId.setEditable(false);
+        pnlForm.add(txtId);
+
+        jLabel2.setText("First name *");
+        pnlForm.add(jLabel2);
+
+        txtFirst.setColumns(20);
+        pnlForm.add(txtFirst);
+
+        jLabel3.setText("Last name *");
+        pnlForm.add(jLabel3);
+
+        txtLast.setColumns(20);
+        pnlForm.add(txtLast);
+
+        jLabel4.setText("Email *");
+        pnlForm.add(jLabel4);
+
+        txtEmail.setColumns(20);
+        pnlForm.add(txtEmail);
+
+        jLabel5.setText("Phone");
+        pnlForm.add(jLabel5);
+
+        txtPhone.setColumns(20);
+        pnlForm.add(txtPhone);
+
+        jLabel6.setText("Office hours");
+        pnlForm.add(jLabel6);
+
+        txtOfficeHours.setColumns(20);
+        pnlForm.add(txtOfficeHours);
+
+        pnlForm.add(jLabel7);
+
+        pnlButtons.setBackground(java.awt.Color.white);
+        pnlButtons.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+
+        btnEdit.setText("Edit");
+        btnEdit.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEditActionPerformed(evt);
+            }
+        });
+        pnlButtons.add(btnEdit);
+
+        btnSave.setText("Save");
+        btnSave.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSaveActionPerformed(evt);
+            }
+        });
+        pnlButtons.add(btnSave);
+
+        btnCancel.setText("Cancel");
+        btnCancel.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCancelActionPerformed(evt);
+            }
+        });
+        pnlButtons.add(btnCancel);
+
+        pnlForm.add(pnlButtons);
+
+        pnlTop.add(pnlForm);
+
+        add(pnlTop, java.awt.BorderLayout.NORTH);
+
+        pnlBottom.setBackground(java.awt.Color.white);
+        pnlBottom.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+        add(pnlBottom, java.awt.BorderLayout.SOUTH);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void btnEditActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEditActionPerformed
+        // TODO add your handling code here:
+        setEditing(true); // unlock the boxes
+    }//GEN-LAST:event_btnEditActionPerformed
+
+    private void btnSaveActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSaveActionPerformed
+        // TODO add your handling code here:
+        save();
+    }//GEN-LAST:event_btnSaveActionPerformed
+
+    private void btnCancelActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCancelActionPerformed
+        // TODO add your handling code here:
+        loadProfile(); // put the old info back
+    }//GEN-LAST:event_btnCancelActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnCancel;
+    private javax.swing.JButton btnEdit;
+    private javax.swing.JButton btnSave;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JPanel pnlBottom;
+    private javax.swing.JPanel pnlButtons;
+    private javax.swing.JPanel pnlForm;
+    private javax.swing.JPanel pnlTop;
+    private javax.swing.JTextField txtEmail;
+    private javax.swing.JTextField txtFirst;
+    private javax.swing.JTextField txtId;
+    private javax.swing.JTextField txtLast;
+    private javax.swing.JTextField txtOfficeHours;
+    private javax.swing.JTextField txtPhone;
     // End of variables declaration//GEN-END:variables
 }
