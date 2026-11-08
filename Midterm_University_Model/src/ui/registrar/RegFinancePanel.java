@@ -1,31 +1,32 @@
 /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
+ * Template for registrar pages. Copy it (Paste -> Refactor Copy...) to start a new page:
+ * white page, a row of controls on top (pnlTop), a table in the middle (tblMain),
+ * and a row of buttons at the bottom (pnlBottom). Same style as the student Register page.
  */
 package ui.registrar;
+
 import access.Session;
 import app.AppContext;
 import model.person.Role;
 
 /**
+ * Registrar page template (not shown in the app).
  *
  * @author raene
  */
 public class RegFinancePanel extends javax.swing.JPanel {
-    
+
     private AppContext ctx;
     private Session session;
 
-    /**
-     * Creates new form RegFinancePanel
-     */
+    /** Used only by the NetBeans designer. */
     public RegFinancePanel() {
         initComponents();
     }
-    
-    public RegFinancePanel(AppContext ctx, Session session){
+
+    public RegFinancePanel(AppContext ctx, Session session) {
         this();
-        session.requireRole(Role.Type.REGISTRAR);
+        session.requireRole(Role.Type.REGISTRAR); // only registrars can open this page
         this.ctx = ctx;
         this.session = session;
     }
@@ -39,21 +40,51 @@ public class RegFinancePanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        setBackground(new java.awt.Color(255, 255, 255));
+        pnlTop = new javax.swing.JPanel();
+        scrMain = new javax.swing.JScrollPane();
+        tblMain = new javax.swing.JTable();
+        pnlBottom = new javax.swing.JPanel();
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
-        );
+        setBackground(java.awt.Color.white);
+        setLayout(new java.awt.BorderLayout());
+
+        pnlTop.setBackground(java.awt.Color.white);
+        pnlTop.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+        add(pnlTop, java.awt.BorderLayout.NORTH);
+
+        scrMain.setBackground(java.awt.Color.white);
+
+        tblMain.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Column 1", "Column 2", "Column 3"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        tblMain.setFillsViewportHeight(true);
+        scrMain.setViewportView(tblMain);
+
+        add(scrMain, java.awt.BorderLayout.CENTER);
+
+        pnlBottom.setBackground(java.awt.Color.white);
+        pnlBottom.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+        add(pnlBottom, java.awt.BorderLayout.SOUTH);
     }// </editor-fold>//GEN-END:initComponents
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JPanel pnlBottom;
+    private javax.swing.JPanel pnlTop;
+    private javax.swing.JScrollPane scrMain;
+    private javax.swing.JTable tblMain;
     // End of variables declaration//GEN-END:variables
 }

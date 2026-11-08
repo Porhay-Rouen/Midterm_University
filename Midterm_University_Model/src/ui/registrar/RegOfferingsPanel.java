@@ -1,32 +1,31 @@
 /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
+ * Registrar > Offerings. Create and manage semester course offerings.
+ * Built from RegPageTemplate (same style as the student Register page).
  */
 package ui.registrar;
+
 import access.Session;
 import app.AppContext;
 import model.person.Role;
 
 /**
+ * Registrar > Offerings page.
  *
  * @author raene
  */
-
 public class RegOfferingsPanel extends javax.swing.JPanel {
 
     private AppContext ctx;
-    private Session session; 
+    private Session session;
 
-    /**
-     * Creates new form RegOfferingsPanel
-     */
+    /** Used only by the NetBeans designer. */
     public RegOfferingsPanel() {
         initComponents();
     }
-    
-    public RegOfferingsPanel(AppContext ctx, Session session){
+
+    public RegOfferingsPanel(AppContext ctx, Session session) {
         this();
-        session.requireRole(Role.Type.REGISTRAR);
+        session.requireRole(Role.Type.REGISTRAR); // only registrars can open this page
         this.ctx = ctx;
         this.session = session;
     }
@@ -40,21 +39,173 @@ public class RegOfferingsPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        setBackground(new java.awt.Color(255, 255, 255));
+        pnlTop = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        cmbSemester = new javax.swing.JComboBox<>();
+        jLabel2 = new javax.swing.JLabel();
+        txtFind = new javax.swing.JTextField();
+        btnFind = new javax.swing.JButton();
+        btnShowAll = new javax.swing.JButton();
+        scrMain = new javax.swing.JScrollPane();
+        tblOfferings = new javax.swing.JTable();
+        pnlBottom = new javax.swing.JPanel();
+        pnlRow1 = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        cmbCourse = new javax.swing.JComboBox<>();
+        jLabel4 = new javax.swing.JLabel();
+        cmbFaculty = new javax.swing.JComboBox<>();
+        jLabel5 = new javax.swing.JLabel();
+        spnCapacity = new javax.swing.JSpinner();
+        pnlRow2 = new javax.swing.JPanel();
+        jLabel6 = new javax.swing.JLabel();
+        txtRoom = new javax.swing.JTextField();
+        jLabel7 = new javax.swing.JLabel();
+        txtTime = new javax.swing.JTextField();
+        pnlButtons = new javax.swing.JPanel();
+        btnCreate = new javax.swing.JButton();
+        btnUpdate = new javax.swing.JButton();
+        btnDelete = new javax.swing.JButton();
+        btnClear = new javax.swing.JButton();
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
-        );
+        setBackground(java.awt.Color.white);
+        setLayout(new java.awt.BorderLayout());
+
+        pnlTop.setBackground(java.awt.Color.white);
+        pnlTop.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+
+        jLabel1.setText("Semester:");
+        pnlTop.add(jLabel1);
+
+        cmbSemester.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] {  }));
+        pnlTop.add(cmbSemester);
+
+        jLabel2.setText("Course no.:");
+        pnlTop.add(jLabel2);
+
+        txtFind.setColumns(10);
+        pnlTop.add(txtFind);
+
+        btnFind.setText("Find");
+        pnlTop.add(btnFind);
+
+        btnShowAll.setText("Show All");
+        pnlTop.add(btnShowAll);
+
+        add(pnlTop, java.awt.BorderLayout.NORTH);
+
+        scrMain.setBackground(java.awt.Color.white);
+
+        tblOfferings.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Course ID", "Title", "Faculty", "Room", "Time", "Capacity", "Enrolled"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        tblOfferings.setFillsViewportHeight(true);
+        scrMain.setViewportView(tblOfferings);
+
+        add(scrMain, java.awt.BorderLayout.CENTER);
+
+        pnlBottom.setBackground(java.awt.Color.white);
+        pnlBottom.setLayout(new java.awt.GridLayout(3, 1));
+
+        pnlRow1.setBackground(java.awt.Color.white);
+        pnlRow1.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+
+        jLabel3.setText("Course:");
+        pnlRow1.add(jLabel3);
+
+        cmbCourse.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] {  }));
+        pnlRow1.add(cmbCourse);
+
+        jLabel4.setText("Faculty:");
+        pnlRow1.add(jLabel4);
+
+        cmbFaculty.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] {  }));
+        pnlRow1.add(cmbFaculty);
+
+        jLabel5.setText("Capacity:");
+        pnlRow1.add(jLabel5);
+
+        spnCapacity.setModel(new javax.swing.SpinnerNumberModel(30, 1, 500, 1));
+        pnlRow1.add(spnCapacity);
+
+        pnlBottom.add(pnlRow1);
+
+        pnlRow2.setBackground(java.awt.Color.white);
+        pnlRow2.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+
+        jLabel6.setText("Room:");
+        pnlRow2.add(jLabel6);
+
+        txtRoom.setColumns(8);
+        pnlRow2.add(txtRoom);
+
+        jLabel7.setText("Time:");
+        pnlRow2.add(jLabel7);
+
+        txtTime.setColumns(12);
+        pnlRow2.add(txtTime);
+
+        pnlBottom.add(pnlRow2);
+
+        pnlButtons.setBackground(java.awt.Color.white);
+        pnlButtons.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+
+        btnCreate.setText("Create Offering");
+        pnlButtons.add(btnCreate);
+
+        btnUpdate.setText("Update");
+        pnlButtons.add(btnUpdate);
+
+        btnDelete.setText("Delete Offering");
+        pnlButtons.add(btnDelete);
+
+        btnClear.setText("Clear");
+        pnlButtons.add(btnClear);
+
+        pnlBottom.add(pnlButtons);
+
+        add(pnlBottom, java.awt.BorderLayout.SOUTH);
     }// </editor-fold>//GEN-END:initComponents
 
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnClear;
+    private javax.swing.JButton btnCreate;
+    private javax.swing.JButton btnDelete;
+    private javax.swing.JButton btnFind;
+    private javax.swing.JButton btnShowAll;
+    private javax.swing.JButton btnUpdate;
+    private javax.swing.JComboBox<String> cmbCourse;
+    private javax.swing.JComboBox<String> cmbFaculty;
+    private javax.swing.JComboBox<String> cmbSemester;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel jLabel4;
+    private javax.swing.JLabel jLabel5;
+    private javax.swing.JLabel jLabel6;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JPanel pnlBottom;
+    private javax.swing.JPanel pnlButtons;
+    private javax.swing.JPanel pnlRow1;
+    private javax.swing.JPanel pnlRow2;
+    private javax.swing.JPanel pnlTop;
+    private javax.swing.JScrollPane scrMain;
+    private javax.swing.JSpinner spnCapacity;
+    private javax.swing.JTable tblOfferings;
+    private javax.swing.JTextField txtFind;
+    private javax.swing.JTextField txtRoom;
+    private javax.swing.JTextField txtTime;
     // End of variables declaration//GEN-END:variables
 }
