@@ -9,18 +9,24 @@ import app.AppContext;
 import java.awt.Color;
 import model.person.Role;
 import model.person.StudentRole;
+import java.time.format.DateTimeFormatter;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+import model.course.SeatAssignment;
+import model.record.Payment;
 
 /**
  * Built with AI coaching (Claude): concepts and code patterns explained step by
  * step; typed, tested, and debugged by Brendan Gilbert.
- * 
+ *
  * @author Brendan Gilbert
  */
 public class TuitionPanel extends javax.swing.JPanel {
-    
+
     private AppContext ctx;
     private Session session;
     private StudentRole student;
+    private static final DateTimeFormatter WHEN = DateTimeFormatter.ofPattern("MMM d, yyyy h:mm a");
 
     /**
      * Creates new form TuitionPanel
@@ -28,7 +34,39 @@ public class TuitionPanel extends javax.swing.JPanel {
     public TuitionPanel() {
         initComponents();
     }
-    
+
+    /**
+     * Rebuilds the page each time it's shown: balance, charges, and payment
+     * history.
+     */
+    private void refresh() {
+        lblBalance.setText(String.format("Balance due: $%,.2f", student.getBalance()));
+        lblNetPaid.setText(String.format("Net paid: $%,.2f", student.getNetTuitionPaid()));
+
+        // Charges: one row per course the student is enrolled in
+        DefaultTableModel charges = (DefaultTableModel) tblCharges.getModel();
+        charges.setRowCount(0);
+        for (SeatAssignment sa : student.getAllSeatAssignments()) {
+            charges.addRow(new Object[]{
+                sa.getSemester().getName(), sa.getCourse().getCourseId(), sa.getCourseOffering().getTitle(), sa.getCredits(),
+                String.format("$%,.2f", sa.getTuition()),
+                sa.isPaid() ? "Yes" : "No"
+            });
+        }
+
+        // Payment history: every payment and refund, refunds shown as negative
+        DefaultTableModel history = (DefaultTableModel) tblHistory.getModel();
+        history.setRowCount(0);
+        for (Payment p : student.getPayments()) {
+            history.addRow(new Object[]{
+                p.getTimestamp().format(WHEN),
+                p.getTypeLabel(),
+                p.getDescription(),
+                (p.isRefund() ? "-" : "") + String.format("$%,.2f", p.getAmount())
+            });
+        }
+    }
+
     /**
      * Builds the Tuition page for the logged-in student
      */
@@ -68,6 +106,11 @@ public class TuitionPanel extends javax.swing.JPanel {
         tblHistory = new javax.swing.JTable();
 
         setBackground(java.awt.Color.white);
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                formComponentShown(evt);
+            }
+        });
         setLayout(new java.awt.BorderLayout());
 
         pnlSummary.setBackground(java.awt.Color.white);
@@ -78,6 +121,11 @@ public class TuitionPanel extends javax.swing.JPanel {
         pnlSummary.add(lblBalance);
 
         btnPay.setText("Pay Tuition");
+        btnPay.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnPayActionPerformed(evt);
+            }
+        });
         pnlSummary.add(btnPay);
 
         lblNetPaid.setText("Net paid: $0.00");
@@ -146,6 +194,43 @@ public class TuitionPanel extends javax.swing.JPanel {
 
         add(pnlTables, java.awt.BorderLayout.CENTER);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void formComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
+        // Rebuild the page every time the student opens it (e.g., after enrolling or dropping)
+        refresh();
+    }//GEN-LAST:event_formComponentShown
+
+    private void btnPayActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnPayActionPerformed
+        // AI-ASSISTED (Claude): full method provided after debugging; reviewed, tested, and understood by Brendan Gilbert
+        // Pays the student's whole tuition balance after a confirmation; does nothing if there's no balance
+        // 1. GUARD: nothing owed → tell them, record nothing, stop (spec rule)
+        if (student.getBalance() <= 0) {
+            JOptionPane.showMessageDialog(this, "You have no balance to pay.");
+            return;
+        }
+
+        // 2. CONFIRM: show the exact amount and ask before taking money
+        int answer = JOptionPane.showConfirmDialog(this,
+                String.format("Pay $%,.2f now?", student.getBalance()),
+                "Confirm Payment", JOptionPane.YES_NO_OPTION);
+        if (answer != JOptionPane.YES_OPTION) {
+            return;   // they clicked No (or closed the window): stop, nothing paid
+        }
+
+        // 3. ACT: the model marks every unpaid course as paid and records one Payment
+        Payment payment = student.pay();
+
+        // 4. CHECK: pay() hands back null when there was nothing to pay (belt and suspenders)
+        if (payment == null) {
+            JOptionPane.showMessageDialog(this, "You have no balance to pay.");
+            return;
+        }
+
+        // 5. FINISH: redraw the page with the new numbers, then confirm with the amount paid
+        refresh();
+        JOptionPane.showMessageDialog(this,
+                String.format("Paid $%,.2f. Your transcript is now available.", payment.getAmount()));
+    }//GEN-LAST:event_btnPayActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
