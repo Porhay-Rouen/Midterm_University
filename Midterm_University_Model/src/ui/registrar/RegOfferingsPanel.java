@@ -1,15 +1,29 @@
 /*
- * Registrar > Offerings. Create and manage semester course offerings.
- * Built from RegPageTemplate (same style as the student Register page).
+ * registrar offerings page. this is where the registrar adds courses for a semester,
+ * picks the teacher, sets how many seats, and changes the room or time.
+ * made from my page template so it looks like the student register page.
  */
 package ui.registrar;
 
 import access.Session;
 import app.AppContext;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.JOptionPane;
+import javax.swing.table.DefaultTableModel;
+import model.course.CourseOffering;
+import model.course.CourseSchedule;
+import model.course.Semester;
+import model.person.FacultyRole;
+import model.person.Person;
 import model.person.Role;
+import model.university.Course;
+import model.university.Department;
 
 /**
- * Registrar > Offerings page.
+ * registrar offerings page
  *
  * @author raene
  */
@@ -18,16 +32,267 @@ public class RegOfferingsPanel extends javax.swing.JPanel {
     private AppContext ctx;
     private Session session;
 
-    /** Used only by the NetBeans designer. */
+    // these lists match the dropdowns and the table rows, same order
+    private final List<Semester> semesterList = new ArrayList<>();
+    private final List<Course> courseList = new ArrayList<>();
+    private final List<FacultyRole> facultyList = new ArrayList<>(); // the first one is "unassigned"
+    private final List<CourseOffering> shown = new ArrayList<>();
+    private boolean loading = false; // so the semester dropdown doesn't reload the table while i'm still filling it
+
     public RegOfferingsPanel() {
         initComponents();
     }
 
     public RegOfferingsPanel(AppContext ctx, Session session) {
         this();
-        session.requireRole(Role.Type.REGISTRAR); // only registrars can open this page
+        session.requireRole(Role.Type.REGISTRAR);
         this.ctx = ctx;
         this.session = session;
+
+        // when you click a row it fills in the form at the bottom
+        tblOfferings.getSelectionModel().addListSelectionListener(e -> {
+            if (!e.getValueIsAdjusting()) {
+                fillFormFromSelectedRow();
+            }
+        });
+        // reload everything each time you open this page
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentShown(ComponentEvent e) {
+                refresh();
+            }
+        });
+        refresh();
+    }
+
+    // fills the dropdowns and the table with the latest info
+    public void refresh() {
+        loading = true;
+        int semIndex = cmbSemester.getSelectedIndex();
+
+        cmbSemester.removeAllItems();
+        semesterList.clear();
+        for (Semester s : ctx.getUniversity().getSemesters()) {
+            semesterList.add(s);
+            cmbSemester.addItem(s.getName());
+        }
+        if (semIndex >= 0 && semIndex < cmbSemester.getItemCount()) {
+            cmbSemester.setSelectedIndex(semIndex);
+        }
+
+        cmbCourse.removeAllItems();
+        courseList.clear();
+        for (Department d : ctx.getUniversity().getAllDepartments()) {
+            for (Course c : d.getCourseCatalog().getCourses()) {
+                courseList.add(c);
+                cmbCourse.addItem(c.getCourseId() + " - " + c.getName());
+            }
+        }
+
+        cmbFaculty.removeAllItems();
+        facultyList.clear();
+        cmbFaculty.addItem("Unassigned");
+        facultyList.add(null);
+        for (Person p : ctx.getUniversity().getPersons(Role.Type.FACULTY)) {
+            FacultyRole f = p.getRole(FacultyRole.class);
+            if (f != null) {
+                facultyList.add(f);
+                cmbFaculty.addItem(p.getFullName());
+            }
+        }
+        loading = false;
+        loadTable();
+    }
+
+    // the semester picked in the dropdown
+    private Semester selectedSemester() {
+        int i = cmbSemester.getSelectedIndex();
+        return (i < 0 || i >= semesterList.size()) ? null : semesterList.get(i);
+    }
+
+    // shows all the courses for the semester you picked
+    private void loadTable() {
+        List<CourseOffering> list = new ArrayList<>();
+        Semester sem = selectedSemester();
+        if (sem != null) {
+            for (Department d : ctx.getUniversity().getAllDepartments()) {
+                CourseSchedule schedule = d.findSchedule(sem);
+                if (schedule != null) {
+                    list.addAll(schedule.getOfferings());
+                }
+            }
+        }
+        showRows(list);
+    }
+
+    // clears the table and puts these courses in it
+    private void showRows(List<CourseOffering> list) {
+        DefaultTableModel model = (DefaultTableModel) tblOfferings.getModel();
+        model.setRowCount(0);
+        shown.clear();
+        for (CourseOffering o : list) {
+            shown.add(o);
+            model.addRow(new Object[] {o.getCourse().getCourseId(), o.getTitle(), o.getFacultyName(),
+                o.getRoom(), o.getMeetingTime(), o.getCapacity(), o.getEnrolledCount()});
+        }
+    }
+
+    // search by course number, like 6215 finds INFO6215
+    private void find() {
+        String text = txtFind.getText().trim();
+        Semester sem = selectedSemester();
+        if (text.isEmpty()) {
+            error("Type a course number to search, e.g. INFO6215.");
+            return;
+        }
+        if (sem == null) {
+            error("Please choose a semester first.");
+            return;
+        }
+        List<CourseOffering> found = new ArrayList<>();
+        for (Department d : ctx.getUniversity().getAllDepartments()) {
+            CourseSchedule schedule = d.findSchedule(sem);
+            if (schedule != null) {
+                found.addAll(schedule.searchByCourseId(text));
+            }
+        }
+        showRows(found);
+        if (found.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No offering matches \"" + text + "\".");
+        }
+    }
+
+    // shows a red error popup
+    private void error(String message) {
+        JOptionPane.showMessageDialog(this, message, "Error", JOptionPane.ERROR_MESSAGE);
+    }
+
+    // the course in the row you clicked (or nothing)
+    private CourseOffering selectedOffering() {
+        int row = tblOfferings.getSelectedRow();
+        return (row < 0 || row >= shown.size()) ? null : shown.get(row);
+    }
+
+    // the teacher picked in the dropdown
+    private FacultyRole selectedFaculty() {
+        int i = cmbFaculty.getSelectedIndex();
+        return (i < 0 || i >= facultyList.size()) ? null : facultyList.get(i);
+    }
+
+    // puts the clicked row into the form so you can change it
+    private void fillFormFromSelectedRow() {
+        CourseOffering o = selectedOffering();
+        if (o == null) {
+            return;
+        }
+        cmbCourse.setSelectedIndex(courseList.indexOf(o.getCourse()));
+        int f = facultyList.indexOf(o.getFaculty());
+        cmbFaculty.setSelectedIndex(f < 0 ? 0 : f);
+        spnCapacity.setValue(o.getCapacity());
+        txtRoom.setText(o.getRoom());
+        txtTime.setText(o.getMeetingTime());
+    }
+
+    // empties the form
+    private void clearForm() {
+        tblOfferings.clearSelection();
+        if (cmbCourse.getItemCount() > 0) {
+            cmbCourse.setSelectedIndex(0);
+        }
+        if (cmbFaculty.getItemCount() > 0) {
+            cmbFaculty.setSelectedIndex(0);
+        }
+        spnCapacity.setValue(30);
+        txtRoom.setText("");
+        txtTime.setText("");
+    }
+
+    // checks the form, gives back a message if something is missing
+    private String checkForm() {
+        if (selectedSemester() == null) {
+            return "Please choose a semester.";
+        }
+        if (txtRoom.getText().trim().isEmpty()) {
+            return "Room is required (e.g. R101).";
+        }
+        if (txtTime.getText().trim().isEmpty()) {
+            return "Meeting time is required (e.g. Mon 6-9 PM).";
+        }
+        return null;
+    }
+
+    // create offering button
+    private void createOffering() {
+        String problem = checkForm();
+        int c = cmbCourse.getSelectedIndex();
+        if (problem == null && (c < 0 || c >= courseList.size())) {
+            problem = "Please choose a course.";
+        }
+        if (problem != null) {
+            error(problem);
+            return;
+        }
+        Course course = courseList.get(c);
+        Semester sem = selectedSemester();
+        try {
+            Department dept = course.getDepartment();
+            CourseSchedule schedule = dept.findSchedule(sem);
+            if (schedule == null) {
+                schedule = dept.newCourseSchedule(sem); // make a schedule if this semester doesn't have one yet
+            }
+            schedule.newOffering(course, selectedFaculty(), (Integer) spnCapacity.getValue(),
+                    txtRoom.getText().trim(), txtTime.getText().trim());
+            loadTable();
+            clearForm();
+            JOptionPane.showMessageDialog(this, course.getCourseId() + " is now offered in " + sem + ".");
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            error(ex.getMessage()); // shows what went wrong, like the course is already offered
+        }
+    }
+
+    // update button, saves the changes to the course you clicked
+    private void updateOffering() {
+        CourseOffering o = selectedOffering();
+        if (o == null) {
+            error("Select an offering in the table first.");
+            return;
+        }
+        String problem = checkForm();
+        if (problem != null) {
+            error(problem);
+            return;
+        }
+        try {
+            o.setCapacity((Integer) spnCapacity.getValue()); // can't go lower than how many students are already in it
+            o.assignFaculty(selectedFaculty());
+            o.setRoom(txtRoom.getText());
+            o.setMeetingTime(txtTime.getText());
+            loadTable();
+            JOptionPane.showMessageDialog(this, o.getCourse().getCourseId() + " updated.");
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            error(ex.getMessage());
+        }
+    }
+
+    // delete button
+    private void deleteOffering() {
+        CourseOffering o = selectedOffering();
+        if (o == null) {
+            error("Select an offering in the table first.");
+            return;
+        }
+        int answer = JOptionPane.showConfirmDialog(this, "Delete " + o.getCourse().getCourseId() + "?",
+                "Confirm", JOptionPane.YES_NO_OPTION);
+        if (answer != JOptionPane.YES_OPTION) {
+            return;
+        }
+        try {
+            o.getSchedule().removeOffering(o); // won't let you delete it if students are in it
+            loadTable();
+            clearForm();
+        } catch (IllegalArgumentException | IllegalStateException ex) {
+            error(ex.getMessage());
+        }
     }
 
     /**
@@ -77,6 +342,11 @@ public class RegOfferingsPanel extends javax.swing.JPanel {
         pnlTop.add(jLabel1);
 
         cmbSemester.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] {  }));
+        cmbSemester.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbSemesterActionPerformed(evt);
+            }
+        });
         pnlTop.add(cmbSemester);
 
         jLabel2.setText("Course no.:");
@@ -86,9 +356,19 @@ public class RegOfferingsPanel extends javax.swing.JPanel {
         pnlTop.add(txtFind);
 
         btnFind.setText("Find");
+        btnFind.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnFindActionPerformed(evt);
+            }
+        });
         pnlTop.add(btnFind);
 
         btnShowAll.setText("Show All");
+        btnShowAll.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnShowAllActionPerformed(evt);
+            }
+        });
         pnlTop.add(btnShowAll);
 
         add(pnlTop, java.awt.BorderLayout.NORTH);
@@ -163,21 +443,77 @@ public class RegOfferingsPanel extends javax.swing.JPanel {
         pnlButtons.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
         btnCreate.setText("Create Offering");
+        btnCreate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnCreateActionPerformed(evt);
+            }
+        });
         pnlButtons.add(btnCreate);
 
         btnUpdate.setText("Update");
+        btnUpdate.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnUpdateActionPerformed(evt);
+            }
+        });
         pnlButtons.add(btnUpdate);
 
         btnDelete.setText("Delete Offering");
+        btnDelete.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDeleteActionPerformed(evt);
+            }
+        });
         pnlButtons.add(btnDelete);
 
         btnClear.setText("Clear");
+        btnClear.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnClearActionPerformed(evt);
+            }
+        });
         pnlButtons.add(btnClear);
 
         pnlBottom.add(pnlButtons);
 
         add(pnlBottom, java.awt.BorderLayout.SOUTH);
     }// </editor-fold>//GEN-END:initComponents
+
+    private void cmbSemesterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbSemesterActionPerformed
+        // TODO add your handling code here:
+        if (!loading) { loadTable(); }
+    }//GEN-LAST:event_cmbSemesterActionPerformed
+
+    private void btnFindActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnFindActionPerformed
+        // TODO add your handling code here:
+        find();
+    }//GEN-LAST:event_btnFindActionPerformed
+
+    private void btnShowAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowAllActionPerformed
+        // TODO add your handling code here:
+        txtFind.setText(""); loadTable();
+    }//GEN-LAST:event_btnShowAllActionPerformed
+
+    private void btnCreateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnCreateActionPerformed
+        // TODO add your handling code here:
+        createOffering();
+    }//GEN-LAST:event_btnCreateActionPerformed
+
+    private void btnUpdateActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnUpdateActionPerformed
+        // TODO add your handling code here:
+        updateOffering();
+    }//GEN-LAST:event_btnUpdateActionPerformed
+
+    private void btnDeleteActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDeleteActionPerformed
+        // TODO add your handling code here:
+        deleteOffering();
+    }//GEN-LAST:event_btnDeleteActionPerformed
+
+    private void btnClearActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnClearActionPerformed
+        // TODO add your handling code here:
+        clearForm();
+    }//GEN-LAST:event_btnClearActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnClear;
