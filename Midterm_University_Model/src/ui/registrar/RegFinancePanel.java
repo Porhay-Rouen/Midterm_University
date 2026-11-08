@@ -1,16 +1,24 @@
 /*
- * Template for registrar pages. Copy it (Paste -> Refactor Copy...) to start a new page:
- * white page, a row of controls on top (pnlTop), a table in the middle (tblMain),
- * and a row of buttons at the bottom (pnlBottom). Same style as the student Register page.
+ * registrar finance page. shows every student's balance and if they paid,
+ * plus for one semester how much tuition came in, how much is still unpaid,
+ * and how much each department made. made from my page template.
  */
 package ui.registrar;
 
 import access.Session;
 import app.AppContext;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import javax.swing.table.DefaultTableModel;
+import model.course.Semester;
 import model.person.Role;
+import model.report.UniversityReports;
 
 /**
- * Registrar page template (not shown in the app).
+ * registrar finance page
  *
  * @author raene
  */
@@ -19,7 +27,10 @@ public class RegFinancePanel extends javax.swing.JPanel {
     private AppContext ctx;
     private Session session;
 
-    /** Used only by the NetBeans designer. */
+    private final List<Semester> semesterList = new ArrayList<>(); // matches the semester dropdown, same order
+    private boolean loading = false; // so the dropdown doesn't reload while i'm still filling it
+
+    // only used by the netbeans designer
     public RegFinancePanel() {
         initComponents();
     }
@@ -29,6 +40,71 @@ public class RegFinancePanel extends javax.swing.JPanel {
         session.requireRole(Role.Type.REGISTRAR); // only registrars can open this page
         this.ctx = ctx;
         this.session = session;
+
+        // reload the numbers every time you open this page
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentShown(ComponentEvent e) {
+                refresh();
+            }
+        });
+        refresh(); // fill everything in when the page first opens
+    }
+
+    // turns a number into money, like 4000 -> $4,000.00
+    private static String money(double amount) {
+        return String.format("$%,.2f", amount);
+    }
+
+    // fills the semester dropdown and both tables with the latest info
+    public void refresh() {
+        loading = true;
+        int semIndex = cmbSemester.getSelectedIndex();
+        cmbSemester.removeAllItems();
+        semesterList.clear();
+        for (Semester s : ctx.getUniversity().getSemesters()) {
+            semesterList.add(s);
+            cmbSemester.addItem(s.getName());
+        }
+        if (semIndex >= 0 && semIndex < cmbSemester.getItemCount()) {
+            cmbSemester.setSelectedIndex(semIndex);
+        }
+        loading = false;
+        loadStatusTable();
+        loadSemesterNumbers();
+    }
+
+    // fills the big table with every student's balance (all, paid or unpaid, depending on "show")
+    private void loadStatusTable() {
+        DefaultTableModel model = (DefaultTableModel) tblStatus.getModel();
+        model.setRowCount(0);
+        String show = (String) cmbShow.getSelectedItem();
+        // each row from the report is: id, name, department, balance, paid/unpaid
+        for (Object[] row : ctx.getReports().paymentStatusOfAllStudents()) {
+            String status = String.valueOf(row[4]);
+            if (show == null || "All".equals(show) || status.equals(show)) {
+                model.addRow(new Object[] {row[0], row[1], row[2], money((Double) row[3]), status});
+            }
+        }
+    }
+
+    // fills the totals and the department table for the semester you picked
+    private void loadSemesterNumbers() {
+        DefaultTableModel model = (DefaultTableModel) tblDept.getModel();
+        model.setRowCount(0);
+        int i = cmbSemester.getSelectedIndex();
+        if (i < 0 || i >= semesterList.size()) {
+            lblCollected.setText("No semester selected.");
+            lblUnpaid.setText("");
+            return;
+        }
+        Semester sem = semesterList.get(i);
+        UniversityReports reports = ctx.getReports();
+        lblCollected.setText("Tuition collected: " + money(reports.tuitionCollected(sem)));
+        lblUnpaid.setText("Unpaid: " + money(reports.tuitionUnpaid(sem)));
+        for (Map.Entry<String, Double> e : reports.revenueByDepartment(sem).entrySet()) {
+            model.addRow(new Object[] {e.getKey(), money(e.getValue())});
+        }
     }
 
     /**
@@ -41,50 +117,135 @@ public class RegFinancePanel extends javax.swing.JPanel {
     private void initComponents() {
 
         pnlTop = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        cmbSemester = new javax.swing.JComboBox<>();
+        lblCollected = new javax.swing.JLabel();
+        lblUnpaid = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
+        cmbShow = new javax.swing.JComboBox<>();
         scrMain = new javax.swing.JScrollPane();
-        tblMain = new javax.swing.JTable();
+        tblStatus = new javax.swing.JTable();
         pnlBottom = new javax.swing.JPanel();
+        jLabel3 = new javax.swing.JLabel();
+        scrDept = new javax.swing.JScrollPane();
+        tblDept = new javax.swing.JTable();
 
         setBackground(java.awt.Color.white);
         setLayout(new java.awt.BorderLayout());
 
         pnlTop.setBackground(java.awt.Color.white);
         pnlTop.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+
+        jLabel1.setText("Semester:");
+        pnlTop.add(jLabel1);
+
+        cmbSemester.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] {  }));
+        cmbSemester.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbSemesterActionPerformed(evt);
+            }
+        });
+        pnlTop.add(cmbSemester);
+
+        lblCollected.setText("Tuition collected: $0.00");
+        pnlTop.add(lblCollected);
+
+        lblUnpaid.setText("Unpaid: $0.00");
+        pnlTop.add(lblUnpaid);
+
+        jLabel2.setText("Show:");
+        pnlTop.add(jLabel2);
+
+        cmbShow.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "All", "Paid", "Unpaid" }));
+        cmbShow.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbShowActionPerformed(evt);
+            }
+        });
+        pnlTop.add(cmbShow);
+
         add(pnlTop, java.awt.BorderLayout.NORTH);
 
         scrMain.setBackground(java.awt.Color.white);
 
-        tblMain.setModel(new javax.swing.table.DefaultTableModel(
+        tblStatus.setModel(new javax.swing.table.DefaultTableModel(
             new Object [][] {
 
             },
             new String [] {
-                "Column 1", "Column 2", "Column 3"
+                "Student ID", "Name", "Department", "Balance", "Status"
             }
         ) {
             boolean[] canEdit = new boolean [] {
-                false, false, false
+                false, false, false, false, false
             };
 
             public boolean isCellEditable(int rowIndex, int columnIndex) {
                 return canEdit [columnIndex];
             }
         });
-        tblMain.setFillsViewportHeight(true);
-        scrMain.setViewportView(tblMain);
+        tblStatus.setFillsViewportHeight(true);
+        scrMain.setViewportView(tblStatus);
 
         add(scrMain, java.awt.BorderLayout.CENTER);
 
         pnlBottom.setBackground(java.awt.Color.white);
-        pnlBottom.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+        pnlBottom.setLayout(new java.awt.BorderLayout());
+
+        jLabel3.setText("Revenue by department");
+        pnlBottom.add(jLabel3, java.awt.BorderLayout.NORTH);
+
+        scrDept.setBackground(java.awt.Color.white);
+        scrDept.setPreferredSize(new java.awt.Dimension(400, 120));
+
+        tblDept.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Department", "Tuition Collected"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        tblDept.setFillsViewportHeight(true);
+        scrDept.setViewportView(tblDept);
+
+        pnlBottom.add(scrDept, java.awt.BorderLayout.CENTER);
+
         add(pnlBottom, java.awt.BorderLayout.SOUTH);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void cmbSemesterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbSemesterActionPerformed
+        // TODO add your handling code here:
+        if (!loading) { loadSemesterNumbers(); } // new semester picked, update the totals
+    }//GEN-LAST:event_cmbSemesterActionPerformed
+
+    private void cmbShowActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbShowActionPerformed
+        // TODO add your handling code here:
+        if (!loading) { loadStatusTable(); } // show all, paid, or unpaid students
+    }//GEN-LAST:event_cmbShowActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox<String> cmbSemester;
+    private javax.swing.JComboBox<String> cmbShow;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel3;
+    private javax.swing.JLabel lblCollected;
+    private javax.swing.JLabel lblUnpaid;
     private javax.swing.JPanel pnlBottom;
     private javax.swing.JPanel pnlTop;
+    private javax.swing.JScrollPane scrDept;
     private javax.swing.JScrollPane scrMain;
-    private javax.swing.JTable tblMain;
+    private javax.swing.JTable tblDept;
+    private javax.swing.JTable tblStatus;
     // End of variables declaration//GEN-END:variables
 }
