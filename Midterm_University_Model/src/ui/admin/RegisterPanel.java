@@ -66,8 +66,7 @@ public class RegisterPanel extends javax.swing.JPanel {
     /** Student needs department + degree. Faculty needs a department. Registrar needs neither. */
     private void updateEnabledFields() {
         String type = (String) cmbType.getSelectedItem();
-        cmbDepartment.setEnabled(!"Registrar".equals(type));
-        cmbDegree.setEnabled("Student".equals(type));
+        cmbDepartment.setEnabled("Student".equals(type) || "Faculty".equals(type));
     }
 
     /**
@@ -243,7 +242,10 @@ public class RegisterPanel extends javax.swing.JPanel {
             }
             created = ctx.getUniversity().registerFaculty(first, last, email, phone,
                     departments.get(deptIndex)).getPerson();
-        } else {
+        } else if ("Registrar".equals(type)) {
+            created = ctx.getUniversity().registerRegistrar(first, last, email, phone).getPerson();
+        }     
+        else {
             created = ctx.getUniversity().registerRegistrar(first, last, email, phone).getPerson();
         }
 

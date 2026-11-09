@@ -34,7 +34,8 @@ public class AdminMainPanel extends javax.swing.JPanel {
         workArea.add(new AccountsPanel(ctx, session), "Accounts");   
         workArea.add(new RecordsPanel(ctx, session), "Records");  
         workArea.add(new RegisterPanel(ctx, session), "Register"); 
-        workArea.add(new RegistrarsPanel(ctx, session), "Registrars");  
+        workArea.add(new RegistrarsPanel(ctx, session), "Registrars");
+        workArea.add(new ProfilePanel(ctx, session), "Profile");
         
 
         // What each button does
@@ -43,6 +44,7 @@ public class AdminMainPanel extends javax.swing.JPanel {
         btnRecords.addActionListener(e -> showPage("Records")); 
         btnRegister.addActionListener(e -> showPage("Register"));
         btnRegistrars.addActionListener(e -> showPage("Registrars")); 
+        btnProfile.addActionListener(e -> showPage("Profile")); 
         btnLogout.addActionListener(e -> logout());
 
         showPage("Dashboard");   // the page that opens first
@@ -124,6 +126,7 @@ public class AdminMainPanel extends javax.swing.JPanel {
         btnRegistrars.addActionListener(this::btnRegistrarsActionPerformed);
 
         btnProfile.setText("Profile");
+        btnProfile.addActionListener(this::btnProfileActionPerformed);
 
         btnLogout.setText("Log Out");
 
@@ -198,6 +201,10 @@ public class AdminMainPanel extends javax.swing.JPanel {
     private void btnRegisterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegisterActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_btnRegisterActionPerformed
+
+    private void btnProfileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProfileActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnProfileActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
