@@ -29,7 +29,9 @@ public final class SampleData {
 
     private static final String[][] STUDENTS = {
         {"Porhay", "Rouen"}, {"Sokha", "Chan"}, {"Maya", "Patel"}, {"Liam", "Nguyen"}, {"Emma", "Garcia"},
-        {"Noah", "Kim"}, {"Olivia", "Brown"}, {"Ethan", "Davis"}, {"Ava", "Wilson"}, {"Lucas", "Martin"}
+        {"Noah", "Kim"}, {"Olivia", "Brown"}, {"Ethan", "Davis"}, {"Ava", "Wilson"}, {"Lucas", "Martin"},
+        {"Mia", "Lopez"}, {"Jack", "Taylor"}, {"Zoe", "Clark"}, {"Ryan", "Adams"},{"Lily", "Young"}, 
+        {"Omar", "Khalil"}, {"Sara", "Lindgren"}, {"Dev", "Patel"}
     };
 
     private static final String[][] FACULTY = {
@@ -62,6 +64,8 @@ public final class SampleData {
             courses[i] = is.getCourseCatalog().newCourse(COURSES[i][0], COURSES[i][1], 4, "");
             msis.addCourse(courses[i], i == 0); // INFO5100 is the core course
         }
+        
+        
 
         AccessControl access = new AccessControl(uni);
         char[] pw = DEMO_PASSWORD.toCharArray();
@@ -99,6 +103,24 @@ public final class SampleData {
                 students[i].pay();
             }
         }
+                // ---- Extra data: second department, second degree, third semester ----
+        Department cs = college.newDepartment("Computer Science");
+        Degree mscs = cs.newDegree("MSCS", 32);
+        Course algo = cs.getCourseCatalog().newCourse("CS5800", "Algorithms", 4, "");
+        Course data = cs.getCourseCatalog().newCourse("CS5200", "Database Management", 4, "");
+        mscs.addCourse(algo, true);    // true = core course
+        mscs.addCourse(data, false);
+        FacultyRole csTeacher = uni.registerFaculty("Maya", "Singh", "maya.singh@univ.edu", "", cs);
+        access.createAccount("faculty11", pw, csTeacher.getPerson());
+
+        Degree msdata = is.newDegree("MS Data Analytics", 32);
+        msdata.addCourse(courses[1], true);
+
+        Semester summer = uni.newSemester("Summer 2027", LocalDate.of(2027, 5, 10), LocalDate.of(2027, 8, 15));
+        CourseSchedule csSchedule = cs.newCourseSchedule(summer);
+        csSchedule.newOffering(algo, csTeacher, 30, "R301", "Mon 6-9 PM");
+
+        
         return new AppContext(uni, access);
     }
 }
