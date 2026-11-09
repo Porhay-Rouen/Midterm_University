@@ -6,32 +6,138 @@ package ui.student;
 
 import access.Session;
 import app.AppContext;
+import java.awt.Color;
+import java.util.ArrayList;
+import java.util.List;
+import javax.swing.table.DefaultTableModel;
+import model.course.CourseOffering;
+import model.course.CourseSchedule;
+import model.course.Semester;
+import model.person.StudentRole;
+import model.record.CourseLoad;
+import javax.swing.JOptionPane;
 
 /**
+ * Built with AI coaching (Claude): concepts and code patterns explained step by
+ * step; typed, tested, and debugged by Brendan Gilbert.
  *
- * @author macbookpro
+ * @author Brendan Gilbert
  */
 public class RegisterPanel extends javax.swing.JPanel {
 
-    /**
-     * Creates new form RegisterPanel
-     */
     private AppContext ctx;
     private Session session;
-    
+
+    private StudentRole student;
+    private List<CourseOffering> shown = new ArrayList<>();   // row i in the table = shown.get(i)
+
     public RegisterPanel() {
         initComponents();
     }
-    
-    
-    
+
+    /**
+     * The Semester picked in the dropdown (null if none).
+     */
+    private Semester selectedSemester() {
+        return ctx.getUniversity().findSemester((String) cmbSemester.getSelectedItem());
+    }
+
+    /**
+     * That semester's course schedule for the student's department (null if
+     * none).
+     */
+    private CourseSchedule currentSchedule() {
+        Semester semester = selectedSemester();
+        if (semester == null) {
+            return null;
+        }
+        return student.getDepartment().findSchedule(semester);
+    }
+
+    /**
+     * True when this student already holds a seat in the offering.
+     */
+    private boolean isEnrolled(CourseOffering o) {
+        CourseLoad load = student.getTranscript().findCourseLoad(o.getSemester());
+        return load != null && load.findByOffering(o) != null;
+    }
+
+    /**
+     * Erases the table and writes one row per offering. Remembers the list so
+     * row i = offering i.
+     */
+    private void refreshTable(List<CourseOffering> offerings) {
+        shown = offerings;
+        DefaultTableModel model = (DefaultTableModel) tblOfferings.getModel();
+        model.setRowCount(0);
+        for (CourseOffering o : offerings) {
+            model.addRow(new Object[]{
+                o.getCourse().getCourseId(), o.getTitle(), o.getFacultyName(), o.getCourse().getCredits(), o.getMeetingTime(), o.getOpenSeats(),
+                isEnrolled(o) ? "Enrolled" : ""
+            });
+        }
+    }
+
+    /**
+     * Shows "Credits: X of 8" for the selected semester.
+     */
+    private void updateCredits() {
+        int used = 0;
+        Semester semester = selectedSemester();
+        if (semester != null) {
+            CourseLoad load = student.getTranscript().findCourseLoad(semester);
+            if (load != null) {
+                used = load.getTotalCredits();
+            }
+        }
+        lblCredits.setText("Credits: " + used + " of " + CourseLoad.MAX_CREDITS);
+    }
+
+    /**
+     * Shows every offering for the selected semester.
+     */
+    private void showAll() {
+        CourseSchedule schedule = currentSchedule();
+        if (schedule == null) {
+            refreshTable(new ArrayList<>());
+        } else {
+            refreshTable(schedule.getOfferings());
+        }
+        updateCredits();
+    }
+
+    /**
+     * The offering in the selected row, or null (after a message) if no row is
+     * selected.
+     */
+    private CourseOffering selectedOffering() {
+        int row = tblOfferings.getSelectedRow();
+        if (row < 0) {
+            JOptionPane.showMessageDialog(this, "Select a course in the table first.");
+            return null;
+        }
+        return shown.get(row);
+    }
+
+    /**
+     * Builds the Register page for the logged-in student: checks the role,
+     * loads the semesters, and shows that semester's course offerings.
+     */
     public RegisterPanel(AppContext ctx, Session session) {
         this();
         session.requireRole(model.person.Role.Type.STUDENT);
         this.ctx = ctx;
         this.session = session;
-    }
 
+        student = (StudentRole) session.getRole();
+        scrOfferings.getViewport().setBackground(Color.WHITE);  // white space under the rows
+
+        for (Semester s : ctx.getUniversity().getSemesters()) {
+            cmbSemester.addItem(s.getName());
+        }
+        showAll();
+
+    }
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -42,133 +148,227 @@ public class RegisterPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        jPanel1 = new javax.swing.JPanel();
-        jPanel2 = new javax.swing.JPanel();
-        jPanel3 = new javax.swing.JPanel();
-        jLabel1 = new javax.swing.JLabel();
-        btnLogOut = new javax.swing.JButton();
-        jPanel4 = new javax.swing.JPanel();
+        pnlSearch = new javax.swing.JPanel();
+        lblSemester = new javax.swing.JLabel();
+        cmbSemester = new javax.swing.JComboBox<>();
+        lblSearchBy = new javax.swing.JLabel();
+        cmbSearchBy = new javax.swing.JComboBox<>();
+        txtSearch = new javax.swing.JTextField();
+        btnSearch = new javax.swing.JButton();
+        btnShowAll = new javax.swing.JButton();
+        scrOfferings = new javax.swing.JScrollPane();
+        tblOfferings = new javax.swing.JTable();
+        pnlActions = new javax.swing.JPanel();
+        lblCredits = new javax.swing.JLabel();
+        btnEnroll = new javax.swing.JButton();
+        btnDrop = new javax.swing.JButton();
 
-        jPanel3.setBackground(new java.awt.Color(102, 153, 255));
+        setBackground(java.awt.Color.white);
+        setLayout(new java.awt.BorderLayout());
 
-        jLabel1.setFont(new java.awt.Font("Helvetica Neue", 1, 13)); // NOI18N
-        jLabel1.setForeground(new java.awt.Color(255, 255, 255));
-        jLabel1.setText("Student: Register");
+        pnlSearch.setBackground(java.awt.Color.white);
+        pnlSearch.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
 
-        btnLogOut.setText("Log Out");
-        btnLogOut.addActionListener(this::btnLogOutActionPerformed);
+        lblSemester.setText("Semester:");
+        pnlSearch.add(lblSemester);
 
-        javax.swing.GroupLayout jPanel3Layout = new javax.swing.GroupLayout(jPanel3);
-        jPanel3.setLayout(jPanel3Layout);
-        jPanel3Layout.setHorizontalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addGap(14, 14, 14)
-                .addComponent(jLabel1)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 344, Short.MAX_VALUE)
-                .addComponent(btnLogOut)
-                .addContainerGap())
-        );
-        jPanel3Layout.setVerticalGroup(
-            jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel3Layout.createSequentialGroup()
-                .addGap(11, 11, 11)
-                .addGroup(jPanel3Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
-                    .addComponent(jLabel1)
-                    .addComponent(btnLogOut))
-                .addContainerGap(16, Short.MAX_VALUE))
-        );
+        cmbSemester.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbSemesterActionPerformed(evt);
+            }
+        });
+        pnlSearch.add(cmbSemester);
 
-        jPanel4.setBackground(new java.awt.Color(255, 255, 255));
+        lblSearchBy.setText("Search by:");
+        pnlSearch.add(lblSearchBy);
 
-        javax.swing.GroupLayout jPanel4Layout = new javax.swing.GroupLayout(jPanel4);
-        jPanel4.setLayout(jPanel4Layout);
-        jPanel4Layout.setHorizontalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 540, Short.MAX_VALUE)
-        );
-        jPanel4Layout.setVerticalGroup(
-            jPanel4Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 410, Short.MAX_VALUE)
-        );
+        cmbSearchBy.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Course ID", "Teacher", "Course Name" }));
+        pnlSearch.add(cmbSearchBy);
 
-        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
-        jPanel2.setLayout(jPanel2Layout);
-        jPanel2Layout.setHorizontalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addGap(0, 0, Short.MAX_VALUE))
-        );
-        jPanel2Layout.setVerticalGroup(
-            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addComponent(jPanel3, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(jPanel4, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
-        );
+        txtSearch.setColumns(15);
+        txtSearch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                txtSearchActionPerformed(evt);
+            }
+        });
+        pnlSearch.add(txtSearch);
 
-        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
-        jPanel1.setLayout(jPanel1Layout);
-        jPanel1Layout.setHorizontalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 560, Short.MAX_VALUE)
-            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(jPanel1Layout.createSequentialGroup()
-                    .addGap(0, 0, Short.MAX_VALUE)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(0, 0, Short.MAX_VALUE)))
-        );
-        jPanel1Layout.setVerticalGroup(
-            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 466, Short.MAX_VALUE)
-            .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(jPanel1Layout.createSequentialGroup()
-                    .addGap(0, 0, Short.MAX_VALUE)
-                    .addComponent(jPanel2, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(0, 0, Short.MAX_VALUE)))
-        );
+        btnSearch.setText("Search");
+        btnSearch.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnSearchActionPerformed(evt);
+            }
+        });
+        pnlSearch.add(btnSearch);
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 560, Short.MAX_VALUE)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                    .addGap(0, 0, Short.MAX_VALUE)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(0, 0, Short.MAX_VALUE)))
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 466, Short.MAX_VALUE)
-            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-                .addGroup(layout.createSequentialGroup()
-                    .addGap(0, 0, Short.MAX_VALUE)
-                    .addComponent(jPanel1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                    .addGap(0, 0, Short.MAX_VALUE)))
-        );
+        btnShowAll.setText("Show All");
+        btnShowAll.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnShowAllActionPerformed(evt);
+            }
+        });
+        pnlSearch.add(btnShowAll);
+
+        add(pnlSearch, java.awt.BorderLayout.NORTH);
+
+        scrOfferings.setBackground(java.awt.Color.white);
+
+        tblOfferings.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Course ID", "Course Name", "Teacher", "Credits", "Meeting Time", "Open Seats", "Status"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        scrOfferings.setViewportView(tblOfferings);
+
+        add(scrOfferings, java.awt.BorderLayout.CENTER);
+
+        pnlActions.setBackground(java.awt.Color.white);
+
+        lblCredits.setText("Credits: 0 of 8");
+        pnlActions.add(lblCredits);
+
+        btnEnroll.setText("Enroll");
+        btnEnroll.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnEnrollActionPerformed(evt);
+            }
+        });
+        pnlActions.add(btnEnroll);
+
+        btnDrop.setText("Drop");
+        btnDrop.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnDropActionPerformed(evt);
+            }
+        });
+        pnlActions.add(btnDrop);
+
+        add(pnlActions, java.awt.BorderLayout.SOUTH);
     }// </editor-fold>//GEN-END:initComponents
 
-    private void btnLogOutActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnLogOutActionPerformed
-        // TODO add your handling code here:
-        ctx.getAccessControl().logout(session);                  // ends the session
-        java.awt.Window window = javax.swing.SwingUtilities.getWindowAncestor(this);
-        if (window != null) {
-            window.dispose();                                    // closes MainFrame
+    private void btnShowAllActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnShowAllActionPerformed
+        // Clears any search and lists every offering for the selected semester
+
+        showAll();
+    }//GEN-LAST:event_btnShowAllActionPerformed
+
+    private void btnSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnSearchActionPerformed
+        // Runs the search picked in "Search by" (course ID, teacher, or course name) and shows the results in the same table
+
+        String keyword = txtSearch.getText().trim();          // trim() drops extra spaces
+        if (keyword.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "Type something to search for, or click Show All.");
+            return;
         }
-        new ui.login.LoginFrame(ctx).setVisible(true);    
-    }//GEN-LAST:event_btnLogOutActionPerformed
+        CourseSchedule schedule = currentSchedule();
+        if (schedule == null) {
+            JOptionPane.showMessageDialog(this, "No courses are offered this semester.");
+            return;
+        }
+
+        String searchBy = (String) cmbSearchBy.getSelectedItem();
+        List<CourseOffering> results;
+        if (searchBy.equals("Course ID")) {
+            results = schedule.searchByCourseId(keyword);
+        } else if (searchBy.equals("Teacher")) {
+            results = schedule.searchByTeacher(keyword);
+        } else {
+            results = schedule.searchByCourseName(keyword);
+        }
+
+        refreshTable(results);
+        if (results.isEmpty()) {
+            JOptionPane.showMessageDialog(this, "No courses match \"" + keyword + "\".");
+        }
+    }//GEN-LAST:event_btnSearchActionPerformed
+
+    private void txtSearchActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_txtSearchActionPerformed
+        // Pressing Return in the search box does the same thing as clicking Search
+
+        btnSearch.doClick();
+    }//GEN-LAST:event_txtSearchActionPerformed
+
+    private void btnEnrollActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnEnrollActionPerformed
+        // Enrolls the student in the selected offering; the model enforces the rules (8-credit max, already enrolled, seats, enrollment open)
+
+        CourseOffering o = selectedOffering();
+        if (o == null) {
+            return;
+        }
+        try {
+            student.enroll(o);
+            JOptionPane.showMessageDialog(this, "Enrolled in " + o.getCourse().getCourseId()
+                    + ". Tuition was added to your balance.");
+            refreshTable(shown);   // same rows, fresh seat counts and status
+            updateCredits();
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Can't enroll", JOptionPane.WARNING_MESSAGE);
+        }
+    }//GEN-LAST:event_btnEnrollActionPerformed
+
+    private void cmbSemesterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbSemesterActionPerformed
+        // Reloads the table and credit count when a different semester is picked
+
+        showAll();
+    }//GEN-LAST:event_cmbSemesterActionPerformed
+
+    private void btnDropActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnDropActionPerformed
+        // Drops the selected offering after checking enrollment and asking for confirmation; the model handles refunds if it was paid
+
+        CourseOffering o = selectedOffering();
+        if (o == null) {
+            return;
+        }
+
+        // check enrollment 
+        if (!isEnrolled(o)) {
+            JOptionPane.showMessageDialog(this, "You're not enrolled in " + o.getCourse().getCourseId() + ".");
+            return;
+        }
+
+        // drop confirmation
+        int answer = JOptionPane.showConfirmDialog(this, "Drop " + o.getCourse().getCourseId() + "?",
+                "Confirm Drop", JOptionPane.YES_NO_OPTION);
+        if (answer != JOptionPane.YES_OPTION) {
+            return;   // they clicked No (or closed the window): stop, nothing dropped
+        }
+        try {
+            student.drop(o);
+            JOptionPane.showMessageDialog(this, "Successfully dropped " + o.getCourse().getCourseId()
+                    + ". A refund will be issued for any payments received for " + o.getCourse().getCourseId() + ".");
+            refreshTable(shown);   // same rows, fresh seat counts and status
+            updateCredits();
+        } catch (IllegalStateException | IllegalArgumentException e) {
+            JOptionPane.showMessageDialog(this, e.getMessage(), "Can't drop", JOptionPane.WARNING_MESSAGE);
+        }
+    }//GEN-LAST:event_btnDropActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton btnLogOut;
-    private javax.swing.JLabel jLabel1;
-    private javax.swing.JPanel jPanel1;
-    private javax.swing.JPanel jPanel2;
-    private javax.swing.JPanel jPanel3;
-    private javax.swing.JPanel jPanel4;
+    private javax.swing.JButton btnDrop;
+    private javax.swing.JButton btnEnroll;
+    private javax.swing.JButton btnSearch;
+    private javax.swing.JButton btnShowAll;
+    private javax.swing.JComboBox<String> cmbSearchBy;
+    private javax.swing.JComboBox<String> cmbSemester;
+    private javax.swing.JLabel lblCredits;
+    private javax.swing.JLabel lblSearchBy;
+    private javax.swing.JLabel lblSemester;
+    private javax.swing.JPanel pnlActions;
+    private javax.swing.JPanel pnlSearch;
+    private javax.swing.JScrollPane scrOfferings;
+    private javax.swing.JTable tblOfferings;
+    private javax.swing.JTextField txtSearch;
     // End of variables declaration//GEN-END:variables
 }
