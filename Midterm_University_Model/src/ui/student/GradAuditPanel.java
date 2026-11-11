@@ -1,0 +1,221 @@
+/*
+ * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
+ * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
+ */
+package ui.student;
+
+import access.Session;
+import app.AppContext;
+import java.awt.Color;
+import model.person.Role;
+import model.person.StudentRole;
+import javax.swing.table.DefaultTableModel;
+import model.course.SeatAssignment;
+import model.record.Grade;
+import model.university.Course;
+import model.university.Degree;
+
+/**
+ * Built with AI coaching (Claude): concepts and code patterns explained step by
+ * step; typed, tested, and debugged by Brendan Gilbert.
+ *
+ * @author Brendan Gilbert
+ */
+public class GradAuditPanel extends javax.swing.JPanel {
+
+    private AppContext ctx;
+    private Session session;
+    private StudentRole student;
+
+    /**
+     * Creates new form GradAuditPanel
+     */
+    public GradAuditPanel() {
+        initComponents();
+    }
+
+    /**
+     * Builds the Graduation Audit page for the logged-in student.
+     */
+    public GradAuditPanel(AppContext ctx, Session session) {
+        this();
+        session.requireRole(Role.Type.STUDENT);
+        this.ctx = ctx;
+        this.session = session;
+
+        student = (StudentRole) session.getRole();
+        scrCourses.getViewport().setBackground(Color.WHITE);  // white space under the rows
+    }
+
+    /**
+     * Rebuilds the audit each time the page is shown (enrolling or dropping
+     * changes it).
+     */
+    private void refresh() {
+        DefaultTableModel model = (DefaultTableModel) tblCourses.getModel();
+        model.setRowCount(0);
+
+        Degree degree = student.getDegree();
+        if (degree == null) {   // null-safety: a student without a degree can't be audited
+            lblDegree.setText("Degree: none assigned. Please contact the registrar.");
+            lblCompleted.setText("");
+            lblInProgress.setText("");
+            lblCore.setText("");
+            lblReady.setText("");
+            lblProgress.setText("");
+            return;
+        }
+
+        int required = degree.getRequiredCredits();
+        lblDegree.setText("Degree: " + degree.getName() + " (" + required + " credits required)");
+        lblCompleted.setText(String.format("Credits completed: %d of %d (%d%%)",
+                student.getCreditsCompleted(), required, student.getGraduationProgressPercent()));
+        lblInProgress.setText("Credits in progress: " + student.getCreditsInProgress());
+        lblCore.setText("Core courses (" + coreList(degree) + "): "
+                + (student.isCoreCompleted() ? "Completed" : "Not yet completed"));
+        lblReady.setText("Ready to graduate: " + (student.isReadyToGraduate() ? "Yes" : "No"));
+        lblProgress.setText("Progress: " + meter(student.getCreditsCompleted(),
+          student.getCreditsInProgress(), required) + "   (■ done · ▣ in progress · □ to go)");
+
+        for (SeatAssignment sa : student.getAllSeatAssignments()) {
+            Grade grade = sa.getGrade();
+            String counts;
+            if (grade.isPassing()) {          // A through C-: earns credit
+                counts = "Yes";
+            } else if (grade.isFinal()) {     // final but not passing = F
+                counts = "No (failed)";
+            } else {                          // anything else = IP
+                counts = "In progress";
+            }
+            model.addRow(new Object[]{
+                sa.getCourse().getCourseId(), sa.getCourseOffering().getTitle(), sa.getCredits(),
+                degree.isCore(sa.getCourse()) ? "Core" : "Elective", grade, counts
+            });
+        }
+    }
+
+    /**
+     * A text meter: one block per 4-credit course. ■ = done, ▣ = in progress, □
+     * = still to go.
+     */
+    private String meter(int done, int inProgress, int required) {
+        int total = required / 4;          // 32 credits → 8 blocks
+        int doneBlocks = done / 4;
+        int ipBlocks = inProgress / 4;
+        String result = "";
+        for (int i = 0; i < total; i++) {
+            if (i < doneBlocks) {
+                result += "■";
+            } else if (i < doneBlocks + ipBlocks) {
+                result += "▣";
+            } else {
+                result += "□";
+            }
+        }
+        return result;
+    }
+
+    /**
+     * The degree's core course IDs, e.g. "INFO5100" (or "none").
+     */
+    private String coreList(Degree degree) {
+        String result = "";
+        for (Course c : degree.getCoreCourses()) {
+            if (!result.isEmpty()) {
+                result += ", ";   // comma between IDs, not before the first one
+            }
+            result += c.getCourseId();
+        }
+        return result.isEmpty() ? "none" : result;
+    }
+
+    /**
+     * This method is called from within the constructor to initialize the form.
+     * WARNING: Do NOT modify this code. The content of this method is always
+     * regenerated by the Form Editor.
+     */
+    @SuppressWarnings("unchecked")
+    // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
+    private void initComponents() {
+
+        pnlSummary = new javax.swing.JPanel();
+        lblDegree = new javax.swing.JLabel();
+        lblCompleted = new javax.swing.JLabel();
+        lblInProgress = new javax.swing.JLabel();
+        lblCore = new javax.swing.JLabel();
+        lblReady = new javax.swing.JLabel();
+        lblProgress = new javax.swing.JLabel();
+        scrCourses = new javax.swing.JScrollPane();
+        tblCourses = new javax.swing.JTable();
+
+        setBackground(java.awt.Color.white);
+        addComponentListener(new java.awt.event.ComponentAdapter() {
+            public void componentShown(java.awt.event.ComponentEvent evt) {
+                formComponentShown(evt);
+            }
+        });
+        setLayout(new java.awt.BorderLayout());
+
+        pnlSummary.setBackground(java.awt.Color.white);
+        pnlSummary.setLayout(new java.awt.GridLayout(6, 1, 0, 4));
+
+        lblDegree.setText("Degree:");
+        pnlSummary.add(lblDegree);
+
+        lblCompleted.setText("Credits completed:");
+        pnlSummary.add(lblCompleted);
+
+        lblInProgress.setText("Credit in progress:");
+        pnlSummary.add(lblInProgress);
+
+        lblCore.setText("Core courses:");
+        pnlSummary.add(lblCore);
+
+        lblReady.setFont(new java.awt.Font("Helvetica Neue", 1, 13)); // NOI18N
+        lblReady.setText("Ready to graduate:");
+        pnlSummary.add(lblReady);
+
+        lblProgress.setText("Progress:");
+        pnlSummary.add(lblProgress);
+
+        add(pnlSummary, java.awt.BorderLayout.NORTH);
+
+        tblCourses.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Course ID", "Course Name", "Credits", "Type", "Grade", "Counts"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false, false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        scrCourses.setViewportView(tblCourses);
+
+        add(scrCourses, java.awt.BorderLayout.CENTER);
+    }// </editor-fold>//GEN-END:initComponents
+
+    private void formComponentShown(java.awt.event.ComponentEvent evt) {//GEN-FIRST:event_formComponentShown
+        // Rebuild the audit every time the student opens the page
+        refresh();
+    }//GEN-LAST:event_formComponentShown
+
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel lblCompleted;
+    private javax.swing.JLabel lblCore;
+    private javax.swing.JLabel lblDegree;
+    private javax.swing.JLabel lblInProgress;
+    private javax.swing.JLabel lblProgress;
+    private javax.swing.JLabel lblReady;
+    private javax.swing.JPanel pnlSummary;
+    private javax.swing.JScrollPane scrCourses;
+    private javax.swing.JTable tblCourses;
+    // End of variables declaration//GEN-END:variables
+}
