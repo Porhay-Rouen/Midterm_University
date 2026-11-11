@@ -82,7 +82,13 @@
               </Group>
               <Group type="102" alignment="0" attributes="0">
                   <EmptySpace min="-2" pref="41" max="-2" attributes="0"/>
-                  <Component id="btnSave" min="-2" max="-2" attributes="0"/>
+                  <Component id="btnSave" min="-2" pref="120" max="-2" attributes="0"/>
+                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                  <Component id="btnUploadSyllabus" min="-2" pref="138" max="-2" attributes="0"/>
+                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                  <Component id="btnToggleEnrollment" min="-2" max="-2" attributes="0"/>
+                  <EmptySpace type="separate" max="-2" attributes="0"/>
+                  <Component id="lblSyllabus" min="-2" max="-2" attributes="0"/>
                   <EmptySpace min="0" pref="0" max="32767" attributes="0"/>
               </Group>
           </Group>
@@ -125,7 +131,12 @@
                       <Component id="txtCapacity" min="-2" max="-2" attributes="0"/>
                   </Group>
                   <EmptySpace pref="25" max="32767" attributes="0"/>
-                  <Component id="btnSave" min="-2" max="-2" attributes="0"/>
+                  <Group type="103" groupAlignment="3" attributes="0">
+                      <Component id="btnSave" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="btnUploadSyllabus" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="btnToggleEnrollment" alignment="3" min="-2" max="-2" attributes="0"/>
+                      <Component id="lblSyllabus" alignment="3" min="-2" max="-2" attributes="0"/>
+                  </Group>
                   <EmptySpace min="-2" pref="23" max="-2" attributes="0"/>
               </Group>
           </Group>
@@ -231,6 +242,21 @@
               <Color blue="ff" green="ff" red="cc" type="rgb"/>
             </Property>
             <Property name="text" type="java.lang.String" value="Save Changes"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JButton" name="btnUploadSyllabus">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Upload Syllabus..."/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JButton" name="btnToggleEnrollment">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Close Enrollment"/>
+          </Properties>
+        </Component>
+        <Component class="javax.swing.JLabel" name="lblSyllabus">
+          <Properties>
+            <Property name="text" type="java.lang.String" value="Syllabus : none"/>
           </Properties>
         </Component>
       </SubComponents>

@@ -32,13 +32,72 @@ public class MyCoursesPanel extends javax.swing.JPanel {
     loadSemesters();
     cmbSemester.addActionListener(e -> loadCourses());
     btnSave.addActionListener(evt -> btnSaveActionPerformed(evt));
+    btnUploadSyllabus.addActionListener(evt -> uploadSyllabus());
+    btnToggleEnrollment.addActionListener(evt -> toggleEnrollment());
     tblCourses.getSelectionModel().addListSelectionListener(e -> {
     if (!e.getValueIsAdjusting()) {
         fillForm();
+       
     }
 });
     }
-    
+    /** Lets faculty pick a syllabus file and stores its path on the selected course. */
+private void uploadSyllabus() {
+    if (selected == null) {
+        javax.swing.JOptionPane.showMessageDialog(this, "Select a course first.");
+        
+        return;
+    }
+    javax.swing.JFileChooser chooser = new javax.swing.JFileChooser();
+    if (chooser.showOpenDialog(this) != javax.swing.JFileChooser.APPROVE_OPTION) {
+        return;
+    }
+    java.io.File file = chooser.getSelectedFile();
+    if (file == null || !file.isFile()) {
+        javax.swing.JOptionPane.showMessageDialog(this, "Please choose a valid file.");
+        return;
+    }
+    try {
+        selected.setSyllabusPath(file.getAbsolutePath());
+    } catch (IllegalArgumentException | IllegalStateException ex) {
+        javax.swing.JOptionPane.showMessageDialog(this, ex.getMessage());
+        return;
+    }
+    updateSyllabusAndEnrollmentControls();
+    javax.swing.JOptionPane.showMessageDialog(this, "Syllabus saved.");
+}
+
+/** Opens or closes enrollment for the selected course (only allowed before the semester starts). */
+private void toggleEnrollment() {
+    if (selected == null) {
+        javax.swing.JOptionPane.showMessageDialog(this, "Select a course first.");
+        
+        return;
+    }
+    if (!selected.canChangeEnrollment()) {
+        javax.swing.JOptionPane.showMessageDialog(this,
+                "Enrollment can only be changed before the semester starts.");
+        return;
+    }
+    selected.setEnrollmentOpen(!selected.isEnrollmentOpen());
+    int row = tblCourses.getSelectedRow();
+    loadCourses();
+    tblCourses.setRowSelectionInterval(row, row);
+    updateSyllabusAndEnrollmentControls();
+}
+
+/** Refreshes the syllabus label and the enrollment button text for the selected course. */
+private void updateSyllabusAndEnrollmentControls() {
+    if (selected == null) {
+        lblSyllabus.setText("Syllabus: none");
+        btnToggleEnrollment.setText("Close Enrollment");
+        return;
+    }
+    String path = selected.getSyllabusPath();
+    lblSyllabus.setText("Syllabus: " + (path == null || path.isEmpty()
+            ? "none" : new java.io.File(path).getName()));
+    btnToggleEnrollment.setText(selected.isEnrollmentOpen() ? "Close Enrollment" : "Open Enrollment");
+}
     /** Finds the offering for the selected table row. */
 private model.course.CourseOffering getSelectedOffering() {
     int row = tblCourses.getSelectedRow();
@@ -60,6 +119,7 @@ private void fillForm() {
         txtRoom.setText("");
         txtTime.setText("");
         txtCapacity.setText("");
+        updateSyllabusAndEnrollmentControls();
         return;
     }
     txtTitle.setText(selected.getTitle());
@@ -67,6 +127,7 @@ private void fillForm() {
     txtRoom.setText(selected.getRoom());
     txtTime.setText(selected.getMeetingTime());
     txtCapacity.setText(String.valueOf(selected.getCapacity()));
+    updateSyllabusAndEnrollmentControls();
 }
 
     
@@ -105,6 +166,8 @@ private void loadCourses() {
             o.getRoom(), o.getCapacity(), o.getEnrolledCount(),
             o.isEnrollmentOpen() ? "Open" : "Closed"});
     }
+    
+    
 }
     /**
      * This method is called from within the constructor to initialize the form.
@@ -132,6 +195,9 @@ private void loadCourses() {
         txtCapacity = new javax.swing.JTextField();
         jSeparator1 = new javax.swing.JSeparator();
         btnSave = new javax.swing.JButton();
+        btnUploadSyllabus = new javax.swing.JButton();
+        btnToggleEnrollment = new javax.swing.JButton();
+        lblSyllabus = new javax.swing.JLabel();
 
         jPanel2.setBackground(new java.awt.Color(255, 255, 255));
 
@@ -170,6 +236,12 @@ private void loadCourses() {
         btnSave.setBackground(new java.awt.Color(204, 255, 255));
         btnSave.setText("Save Changes");
 
+        btnUploadSyllabus.setText("Upload Syllabus...");
+
+        btnToggleEnrollment.setText("Close Enrollment");
+
+        lblSyllabus.setText("Syllabus : none");
+
         javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
@@ -207,7 +279,13 @@ private void loadCourses() {
                 .addComponent(jSeparator1))
             .addGroup(jPanel2Layout.createSequentialGroup()
                 .addGap(41, 41, 41)
-                .addComponent(btnSave)
+                .addComponent(btnSave, javax.swing.GroupLayout.PREFERRED_SIZE, 120, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(btnUploadSyllabus, javax.swing.GroupLayout.PREFERRED_SIZE, 138, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(btnToggleEnrollment)
+                .addGap(18, 18, 18)
+                .addComponent(lblSyllabus)
                 .addGap(0, 0, Short.MAX_VALUE))
         );
         jPanel2Layout.setVerticalGroup(
@@ -242,7 +320,11 @@ private void loadCourses() {
                     .addComponent(jLabel6)
                     .addComponent(txtCapacity, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 25, Short.MAX_VALUE)
-                .addComponent(btnSave)
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(btnSave)
+                    .addComponent(btnUploadSyllabus)
+                    .addComponent(btnToggleEnrollment)
+                    .addComponent(lblSyllabus))
                 .addGap(23, 23, 23))
         );
 
@@ -301,6 +383,8 @@ javax.swing.JOptionPane.showMessageDialog(this, "Course updated.");
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton btnSave;
+    private javax.swing.JButton btnToggleEnrollment;
+    private javax.swing.JButton btnUploadSyllabus;
     private javax.swing.JComboBox<String> cmbSemester;
     private javax.swing.JLabel jLabel1;
     private javax.swing.JLabel jLabel2;
@@ -311,6 +395,7 @@ javax.swing.JOptionPane.showMessageDialog(this, "Course updated.");
     private javax.swing.JPanel jPanel2;
     private javax.swing.JScrollPane jScrollPane1;
     private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JLabel lblSyllabus;
     private javax.swing.JTable tblCourses;
     private javax.swing.JTextField txtCapacity;
     private javax.swing.JTextField txtDescription;
@@ -319,3 +404,5 @@ javax.swing.JOptionPane.showMessageDialog(this, "Course updated.");
     private javax.swing.JTextField txtTitle;
     // End of variables declaration//GEN-END:variables
 }
+
+
