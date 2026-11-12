@@ -9,13 +9,94 @@ package ui.faculty;
  * @author muykhim
  */
 public class StudentsPanel extends javax.swing.JPanel {
-
+    
     /**
      * Creates new form StudentsPanel
      */
-    public StudentsPanel() {
+    private app.AppContext ctx;
+    private access.Session session;
+    private java.util.List<model.course.CourseOffering> offerings = new java.util.ArrayList<>();
+    private java.util.List<model.course.SeatAssignment> seats = new java.util.ArrayList<>();
+
+    public StudentsPanel(app.AppContext ctx, access.Session session) {
         initComponents();
+    session.requireRole(model.person.Role.Type.FACULTY);
+    this.ctx = ctx;
+    this.session = session;
+    setupTable();
+    loadSemesters();
+    cmbSemester.addActionListener(e -> loadCourses());
+    cmbCourse.addActionListener(e -> loadStudents());
+    btnTranscript.addActionListener(e -> showTranscriptSummary());
+
     }
+    /** Sets up the enrolled-students table (read-only cells). */
+private void setupTable() {
+    tblStudents.setModel(new javax.swing.table.DefaultTableModel(
+            new Object[]{"ID", "Name", "Email", "Progress"}, 0) {
+        @Override
+        public boolean isCellEditable(int row, int col) {
+            return false;
+        }
+    });
+}
+
+/** Fills the semester dropdown, then loads the courses. */
+private void loadSemesters() {
+    cmbSemester.removeAllItems();
+    for (model.course.Semester s : ctx.getUniversity().getSemesters()) {
+        cmbSemester.addItem(s.toString());
+    }
+    loadCourses();
+}
+
+/** Lists this faculty member's courses for the selected semester. */
+private void loadCourses() {
+    cmbCourse.removeAllItems();
+    offerings.clear();
+    int idx = cmbSemester.getSelectedIndex();
+    if (idx >= 0) {
+        model.course.Semester sem = ctx.getUniversity().getSemesters().get(idx);
+        model.person.FacultyRole me = (model.person.FacultyRole) session.getRole();
+        offerings.addAll(me.getOfferings(sem));
+        for (model.course.CourseOffering o : offerings) {
+            cmbCourse.addItem(o.getCourse().getCourseId());
+        }
+    }
+    loadStudents();
+}
+
+/** Shows the students enrolled in the selected course. */
+private void loadStudents() {
+    javax.swing.table.DefaultTableModel m = (javax.swing.table.DefaultTableModel) tblStudents.getModel();
+    m.setRowCount(0);
+    seats.clear();
+    lblSummary.setText("Select a student");
+    int idx = cmbCourse.getSelectedIndex();
+    if (idx < 0 || idx >= offerings.size()) {
+        return;
+    }
+    seats.addAll(offerings.get(idx).getSeatAssignments());
+    for (model.course.SeatAssignment sa : seats) {
+        model.person.Person p = sa.getStudent().getPerson();
+        m.addRow(new Object[]{p.getUniversityId(), p.getFullName(), p.getEmail(),
+            String.format("%.0f%%", sa.getSubmissionProgress())});
+    }
+}
+
+/** Shows the selected student's overall GPA and standing. */
+private void showTranscriptSummary() {
+    int row = tblStudents.getSelectedRow();
+    if (row < 0 || row >= seats.size()) {
+        javax.swing.JOptionPane.showMessageDialog(this, "Select a student first.");
+        return;
+    }
+    model.course.SeatAssignment sa = seats.get(row);
+    model.record.Transcript t = sa.getStudent().getTranscript();
+    String gpa = t.hasGradedCourses() ? String.format("%.2f", t.getOverallGPA()) : "no graded courses yet";
+    lblSummary.setText(sa.getStudent().getPerson().getFullName() + ": overall GPA " + gpa
+            + ", standing " + t.getStanding(sa.getSemester()));
+}
 
     /**
      * This method is called from within the constructor to initialize the form.
@@ -26,19 +107,153 @@ public class StudentsPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
+        jPanel1 = new javax.swing.JPanel();
+        jPanel2 = new javax.swing.JPanel();
+        jLabel2 = new javax.swing.JLabel();
+        cmbSemester = new javax.swing.JComboBox<>();
+        jSeparator1 = new javax.swing.JSeparator();
+        jLabel7 = new javax.swing.JLabel();
+        cmbCourse = new javax.swing.JComboBox<>();
+        btnTranscript = new javax.swing.JButton();
+        jScrollPane2 = new javax.swing.JScrollPane();
+        jScrollPane1 = new javax.swing.JScrollPane();
+        tblStudents = new javax.swing.JTable();
+        lblSummary = new javax.swing.JLabel();
+
+        jPanel2.setBackground(new java.awt.Color(255, 255, 255));
+
+        jLabel2.setText("Semester");
+
+        cmbSemester.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        jLabel7.setText("Course");
+
+        cmbCourse.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+
+        btnTranscript.setBackground(new java.awt.Color(204, 255, 255));
+        btnTranscript.setText("View Transcript Summary");
+        btnTranscript.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                btnTranscriptActionPerformed(evt);
+            }
+        });
+
+        tblStudents.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null},
+                {null, null, null, null}
+            },
+            new String [] {
+                "ID", "Name", "Email", "Progress"
+            }
+        ));
+        jScrollPane1.setViewportView(tblStudents);
+
+        jScrollPane2.setViewportView(jScrollPane1);
+
+        lblSummary.setText("Select a student");
+
+        javax.swing.GroupLayout jPanel2Layout = new javax.swing.GroupLayout(jPanel2);
+        jPanel2.setLayout(jPanel2Layout);
+        jPanel2Layout.setHorizontalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jSeparator1))
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addComponent(jLabel2)
+                        .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                        .addComponent(cmbSemester, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE)
+                        .addGap(18, 18, 18)
+                        .addComponent(jLabel7)
+                        .addGap(18, 18, 18)
+                        .addComponent(cmbCourse, javax.swing.GroupLayout.PREFERRED_SIZE, 135, javax.swing.GroupLayout.PREFERRED_SIZE))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(22, 22, 22)
+                        .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                            .addGroup(jPanel2Layout.createSequentialGroup()
+                                .addGap(6, 6, 6)
+                                .addComponent(btnTranscript))
+                            .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 729, javax.swing.GroupLayout.PREFERRED_SIZE)))
+                    .addGroup(jPanel2Layout.createSequentialGroup()
+                        .addGap(29, 29, 29)
+                        .addComponent(lblSummary)))
+                .addGap(0, 13, Short.MAX_VALUE))
+        );
+        jPanel2Layout.setVerticalGroup(
+            jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel2Layout.createSequentialGroup()
+                .addContainerGap()
+                .addGroup(jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
+                    .addComponent(jLabel2)
+                    .addComponent(cmbSemester, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                    .addComponent(jLabel7)
+                    .addComponent(cmbCourse, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jScrollPane2, javax.swing.GroupLayout.PREFERRED_SIZE, 148, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(15, 15, 15)
+                .addComponent(btnTranscript)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
+                .addComponent(jSeparator1, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addGap(18, 18, 18)
+                .addComponent(lblSummary)
+                .addContainerGap(161, Short.MAX_VALUE))
+        );
+
+        javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
+        jPanel1.setLayout(jPanel1Layout);
+        jPanel1Layout.setHorizontalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addGroup(jPanel1Layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
+        );
+        jPanel1Layout.setVerticalGroup(
+            jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(jPanel2, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+        );
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
+            .addGroup(layout.createSequentialGroup()
+                .addContainerGap()
+                .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                .addContainerGap())
         );
     }// </editor-fold>//GEN-END:initComponents
 
+    private void btnTranscriptActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnTranscriptActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnTranscriptActionPerformed
+
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JButton btnTranscript;
+    private javax.swing.JComboBox<String> cmbCourse;
+    private javax.swing.JComboBox<String> cmbSemester;
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel jLabel7;
+    private javax.swing.JPanel jPanel1;
+    private javax.swing.JPanel jPanel2;
+    private javax.swing.JScrollPane jScrollPane1;
+    private javax.swing.JScrollPane jScrollPane2;
+    private javax.swing.JSeparator jSeparator1;
+    private javax.swing.JLabel lblSummary;
+    private javax.swing.JTable tblStudents;
     // End of variables declaration//GEN-END:variables
 }
