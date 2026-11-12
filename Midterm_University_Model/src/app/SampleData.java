@@ -2,8 +2,10 @@ package app;
 
 import access.AccessControl;
 import java.time.LocalDate;
+import model.course.Assignment;
 import model.course.CourseOffering;
 import model.course.CourseSchedule;
+import model.course.SeatAssignment;
 import model.course.Semester;
 import model.person.FacultyRole;
 import model.person.StudentRole;
@@ -14,11 +16,15 @@ import model.university.Department;
 import model.university.University;
 
 /**
- * Sample data for the demo (the "ConfigureJTable" data): 1 department, 10 students,
- * 10 faculty, 1 admin, 1 registrar, 1 semester and 5 offerings with seat assignments.
+ * Sample data for the demo (the "ConfigureJTable" data): 2 departments, 18 students,
+ * 11 faculty, 1 admin, 1 registrar and 3 semesters.
+ *   Fall 2026   finished: 3 assignments per offering, every score entered, final grades computed, tuition paid.
+ *   Spring 2027 current: 3 assignments per offering, the first 2 scored, grades still in progress (IP),
+ *               first 8 students paid, one refund (a paid student dropped a course).
+ *   Summer 2027 upcoming: one Computer Science offering.
  *
  * Demo logins (all use the password in DEMO_PASSWORD):
- *   admin, registrar, student1..student10, faculty1..faculty10
+ *   admin, registrar, student1..student18, faculty1..faculty11
  *
  * @author Porhay Rouen
  */
@@ -30,7 +36,7 @@ public final class SampleData {
     private static final String[][] STUDENTS = {
         {"Porhay", "Rouen"}, {"Sokha", "Chan"}, {"Maya", "Patel"}, {"Liam", "Nguyen"}, {"Emma", "Garcia"},
         {"Noah", "Kim"}, {"Olivia", "Brown"}, {"Ethan", "Davis"}, {"Ava", "Wilson"}, {"Lucas", "Martin"},
-        {"Mia", "Lopez"}, {"Jack", "Taylor"}, {"Zoe", "Clark"}, {"Ryan", "Adams"},{"Lily", "Young"}, 
+        {"Mia", "Lopez"}, {"Jack", "Taylor"}, {"Zoe", "Clark"}, {"Ryan", "Adams"}, {"Lily", "Young"},
         {"Omar", "Khalil"}, {"Sara", "Lindgren"}, {"Dev", "Patel"}
     };
 
@@ -47,7 +53,37 @@ public final class SampleData {
         {"INFO6250", "Data Management and Database Design"}
     };
 
+    private static final String[] TIMES = {"Mon 6-9 PM", "Tue 6-9 PM", "Wed 6-9 PM", "Thu 6-9 PM", "Fri 6-9 PM"};
+
     private SampleData() {
+    }
+
+    /** Every offering gets the same 3 assignments (100 points each). */
+    private static void addStandardAssignments(CourseOffering offering) {
+        offering.addAssignment("Homework 1", 100);
+        offering.addAssignment("Midterm", 100);
+        offering.addAssignment("Final Project", 100);
+    }
+
+    /**
+     * Records scores for the first 'count' assignments of every enrolled student.
+     * Each student has a fixed "ability" (70 to 98) so GPAs differ from student to student,
+     * and every score is a fixed number (no randomness), so the demo is always the same.
+     */
+    private static void scoreStudents(CourseOffering offering, int offeringIndex, int count,
+            java.util.Map<StudentRole, Integer> studentIndex) {
+        for (SeatAssignment sa : offering.getSeatAssignments()) {
+            int ability = 70 + (studentIndex.get(sa.getStudent()) * 7) % 29;
+            int k = 0;
+            for (Assignment a : offering.getAssignments()) {
+                if (k >= count) {
+                    break;
+                }
+                double score = ability + (offeringIndex * 3 + k * 5) % 6;
+                sa.recordScore(a, Math.min(score, a.getMaxScore()));
+                k++;
+            }
+        }
     }
 
     /** Builds the university, the logins and returns them in one AppContext. */
@@ -55,7 +91,9 @@ public final class SampleData {
         University uni = new University("Northeastern University");
         College college = uni.newCollege("College of Engineering");
         Department is = college.newDepartment("Information Systems");
-        // Spring 2027 has not started yet, so faculty can still open/close enrollment.
+        // Fall 2026 is finished (used for grades and GPA); Spring 2027 has not started yet,
+        // so faculty can still open/close enrollment.
+        Semester fall = uni.newSemester("Fall 2026", LocalDate.of(2026, 9, 1), LocalDate.of(2026, 12, 15));
         Semester semester = uni.newSemester("Spring 2027", LocalDate.of(2027, 1, 11), LocalDate.of(2027, 4, 30));
 
         Degree msis = is.newDegree("MSIS", 32);
@@ -64,9 +102,8 @@ public final class SampleData {
             courses[i] = is.getCourseCatalog().newCourse(COURSES[i][0], COURSES[i][1], 4, "");
             msis.addCourse(courses[i], i == 0); // INFO5100 is the core course
         }
-        
-        
 
+        // Login accounts are created through AccessControl, so it must exist before any account is made.
         AccessControl access = new AccessControl(uni);
         char[] pw = DEMO_PASSWORD.toCharArray();
 
@@ -88,22 +125,54 @@ public final class SampleData {
             access.createAccount("student" + (i + 1), pw, students[i].getPerson());
         }
 
-        CourseSchedule schedule = is.newCourseSchedule(semester);
-        String[] times = {"Mon 6-9 PM", "Tue 6-9 PM", "Wed 6-9 PM", "Thu 6-9 PM", "Fri 6-9 PM"};
-        CourseOffering[] offerings = new CourseOffering[courses.length];
-        for (int i = 0; i < courses.length; i++) {
-            offerings[i] = schedule.newOffering(courses[i], faculty[i], 30, "R10" + (i + 1), times[i]);
+        java.util.Map<StudentRole, Integer> studentIndex = new java.util.HashMap<>();
+        for (int i = 0; i < students.length; i++) {
+            studentIndex.put(students[i], i);
         }
 
-        // Every student takes 2 courses (8 credits = the limit); the first 5 students have paid.
+        // ---- Fall 2026: finished semester. Scores for every assignment, final grades, tuition paid ----
+        CourseSchedule fallSchedule = is.newCourseSchedule(fall);
+        CourseOffering[] fallOfferings = new CourseOffering[courses.length];
+        for (int i = 0; i < courses.length; i++) {
+            fallOfferings[i] = fallSchedule.newOffering(courses[i], faculty[(i + 5) % faculty.length], 30,
+                    "R20" + (i + 1), TIMES[i]);
+            addStandardAssignments(fallOfferings[i]);
+        }
+        for (int i = 0; i < students.length; i++) {
+            students[i].enroll(fallOfferings[i % fallOfferings.length]);
+            students[i].enroll(fallOfferings[(i + 1) % fallOfferings.length]);
+            students[i].pay();   // everybody paid Fall: one payment record each
+        }
+        for (int i = 0; i < fallOfferings.length; i++) {
+            scoreStudents(fallOfferings[i], i, 3, studentIndex);         // all 3 assignments scored
+            for (SeatAssignment sa : fallOfferings[i].getSeatAssignments()) {
+                sa.computeFinalGrade();                                  // final letter grade from the percentage
+            }
+        }
+
+        // ---- Spring 2027: current semester. 2 of 3 assignments scored, grades still IP ----
+        CourseSchedule schedule = is.newCourseSchedule(semester);
+        CourseOffering[] offerings = new CourseOffering[courses.length];
+        for (int i = 0; i < courses.length; i++) {
+            offerings[i] = schedule.newOffering(courses[i], faculty[i], 30, "R10" + (i + 1), TIMES[i]);
+            addStandardAssignments(offerings[i]);
+        }
+
+        // Every student takes 2 courses (8 credits = the limit); the first 8 students have paid Spring.
         for (int i = 0; i < students.length; i++) {
             students[i].enroll(offerings[i % offerings.length]);
             students[i].enroll(offerings[(i + 1) % offerings.length]);
-            if (i < 5) {
+            if (i < 8) {
                 students[i].pay();
             }
         }
-                // ---- Extra data: second department, second degree, third semester ----
+        for (int i = 0; i < offerings.length; i++) {
+            scoreStudents(offerings[i], i, 2, studentIndex);
+        }
+        // A paid student drops one course: the model refunds it, so Payment History shows a refund.
+        students[2].drop(offerings[3]);
+
+        // ---- Extra data: second department, second degree, third semester ----
         Department cs = college.newDepartment("Computer Science");
         Degree mscs = cs.newDegree("MSCS", 32);
         Course algo = cs.getCourseCatalog().newCourse("CS5800", "Algorithms", 4, "");
@@ -120,7 +189,6 @@ public final class SampleData {
         CourseSchedule csSchedule = cs.newCourseSchedule(summer);
         csSchedule.newOffering(algo, csTeacher, 30, "R301", "Mon 6-9 PM");
 
-        
         return new AppContext(uni, access);
     }
 }
