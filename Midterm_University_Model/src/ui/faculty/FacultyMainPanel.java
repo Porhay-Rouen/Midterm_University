@@ -30,6 +30,7 @@ public class FacultyMainPanel extends javax.swing.JPanel {
     session.requireRole(model.person.Role.Type.FACULTY);
     this.ctx = ctx;
     this.session = session;
+    lblUser.setText("Signed in as " + session.getPerson().getFullName());
     workArea.add(new MyCoursesPanel(ctx, session), "My Courses");
     workArea.add(new StudentsPanel(ctx, session), "Students");
     workArea.add(new GradingPanel(ctx, session), "Grading");
@@ -60,6 +61,7 @@ public class FacultyMainPanel extends javax.swing.JPanel {
         jPanel1 = new javax.swing.JPanel();
         lblTitle = new javax.swing.JLabel();
         btnLogOut = new javax.swing.JButton();
+        lblUser = new javax.swing.JLabel();
         ControlPanel = new javax.swing.JPanel();
         btnMyCourses = new javax.swing.JButton();
         btnStudents = new javax.swing.JButton();
@@ -69,6 +71,7 @@ public class FacultyMainPanel extends javax.swing.JPanel {
         workArea = new javax.swing.JPanel();
 
         jPanel1.setBackground(new java.awt.Color(204, 0, 255));
+        jPanel1.setPreferredSize(new java.awt.Dimension(400, 50));
 
         lblTitle.setFont(new java.awt.Font("Helvetica Neue", 1, 13)); // NOI18N
         lblTitle.setForeground(new java.awt.Color(255, 255, 255));
@@ -81,6 +84,9 @@ public class FacultyMainPanel extends javax.swing.JPanel {
             }
         });
 
+        lblUser.setForeground(new java.awt.Color(255, 255, 255));
+        lblUser.setText("Signed in as...");
+
         javax.swing.GroupLayout jPanel1Layout = new javax.swing.GroupLayout(jPanel1);
         jPanel1.setLayout(jPanel1Layout);
         jPanel1Layout.setHorizontalGroup(
@@ -88,7 +94,9 @@ public class FacultyMainPanel extends javax.swing.JPanel {
             .addGroup(jPanel1Layout.createSequentialGroup()
                 .addGap(14, 14, 14)
                 .addComponent(lblTitle)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 160, Short.MAX_VALUE)
+                .addGap(128, 128, 128)
+                .addComponent(lblUser)
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED, 158, Short.MAX_VALUE)
                 .addComponent(btnLogOut)
                 .addGap(22, 22, 22))
         );
@@ -98,13 +106,15 @@ public class FacultyMainPanel extends javax.swing.JPanel {
                 .addGap(11, 11, 11)
                 .addGroup(jPanel1Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.BASELINE)
                     .addComponent(lblTitle)
-                    .addComponent(btnLogOut))
+                    .addComponent(btnLogOut)
+                    .addComponent(lblUser))
                 .addContainerGap(16, Short.MAX_VALUE))
         );
 
         ControlPanel.setBackground(new java.awt.Color(255, 255, 255));
 
         btnMyCourses.setBackground(new java.awt.Color(100, 116, 139));
+        btnMyCourses.setFont(new java.awt.Font("Helvetica Neue", 1, 12)); // NOI18N
         btnMyCourses.setForeground(new java.awt.Color(255, 255, 255));
         btnMyCourses.setText("My Courses");
         btnMyCourses.setBorderPainted(false);
@@ -116,6 +126,7 @@ public class FacultyMainPanel extends javax.swing.JPanel {
         });
 
         btnStudents.setBackground(new java.awt.Color(100, 116, 139));
+        btnStudents.setFont(new java.awt.Font("Helvetica Neue", 1, 12)); // NOI18N
         btnStudents.setForeground(new java.awt.Color(255, 255, 255));
         btnStudents.setText("Students");
         btnStudents.setBorderPainted(false);
@@ -127,6 +138,7 @@ public class FacultyMainPanel extends javax.swing.JPanel {
         });
 
         btnGrading.setBackground(new java.awt.Color(100, 116, 139));
+        btnGrading.setFont(new java.awt.Font("Helvetica Neue", 1, 12)); // NOI18N
         btnGrading.setForeground(new java.awt.Color(255, 255, 255));
         btnGrading.setText("Grading");
         btnGrading.setBorderPainted(false);
@@ -138,6 +150,7 @@ public class FacultyMainPanel extends javax.swing.JPanel {
         });
 
         btnReports.setBackground(new java.awt.Color(100, 116, 139));
+        btnReports.setFont(new java.awt.Font("Helvetica Neue", 1, 12)); // NOI18N
         btnReports.setForeground(new java.awt.Color(255, 255, 255));
         btnReports.setText("Reports");
         btnReports.setBorderPainted(false);
@@ -149,6 +162,7 @@ public class FacultyMainPanel extends javax.swing.JPanel {
         });
 
         btnProfile.setBackground(new java.awt.Color(100, 116, 139));
+        btnProfile.setFont(new java.awt.Font("Helvetica Neue", 1, 12)); // NOI18N
         btnProfile.setForeground(new java.awt.Color(255, 255, 255));
         btnProfile.setText("Profile");
         btnProfile.setBorderPainted(false);
@@ -196,7 +210,7 @@ public class FacultyMainPanel extends javax.swing.JPanel {
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(jPanel1, javax.swing.GroupLayout.DEFAULT_SIZE, 610, Short.MAX_VALUE)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(ControlPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
@@ -261,6 +275,7 @@ public class FacultyMainPanel extends javax.swing.JPanel {
     private javax.swing.JButton btnStudents;
     private javax.swing.JPanel jPanel1;
     private javax.swing.JLabel lblTitle;
+    private javax.swing.JLabel lblUser;
     private javax.swing.JPanel workArea;
     // End of variables declaration//GEN-END:variables
 }
