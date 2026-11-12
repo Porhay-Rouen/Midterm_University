@@ -34,7 +34,7 @@ public class FacultyMainPanel extends javax.swing.JPanel {
     workArea.add(new StudentsPanel(ctx, session), "Students");
     workArea.add(new GradingPanel(ctx, session), "Grading");
     workArea.add(new ui.main.PlaceholderPanel("Reports"), "Reports");
-    workArea.add(new ui.main.PlaceholderPanel("Profile"), "Profile");
+    workArea.add(new ProfilePanel(ctx, session), "Profile");
     showPage("My Courses", btnMyCourses);
     }
 
