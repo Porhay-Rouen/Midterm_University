@@ -1,33 +1,78 @@
 /*
- * Click nbfs://nbhost/SystemFileSystem/Templates/Licenses/license-default.txt to change this license
- * Click nbfs://nbhost/SystemFileSystem/Templates/GUIForms/JPanel.java to edit this template
+ * registrar reports page. one table that switches between two reports:
+ * how many students are in each course, and how gpas are spread out in each program.
+ * made from my page template so it looks like the other pages.
  */
 package ui.registrar;
+
 import access.Session;
 import app.AppContext;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentEvent;
+import java.util.List;
+import javax.swing.table.DefaultTableModel;
 import model.person.Role;
 
 /**
+ * registrar reports page
  *
  * @author raene
  */
 public class RegReportsPanel extends javax.swing.JPanel {
-    
+
     private AppContext ctx;
     private Session session;
 
-    /**
-     * Creates new form RegReportsPanel
-     */
+    // only used by the netbeans designer
     public RegReportsPanel() {
         initComponents();
     }
-    
-    public RegReportsPanel(AppContext ctx, Session session){
+
+    public RegReportsPanel(AppContext ctx, Session session) {
         this();
-        session.requireRole(Role.Type.REGISTRAR);
+        session.requireRole(Role.Type.REGISTRAR); // only registrars can open this page
         this.ctx = ctx;
         this.session = session;
+
+        // reload the report every time you open this page
+        addComponentListener(new ComponentAdapter() {
+            @Override
+            public void componentShown(ComponentEvent e) {
+                refresh();
+            }
+        });
+        refresh(); // show the first report when the page opens
+    }
+
+    // builds the table for whichever report is picked in the dropdown
+    public void refresh() {
+        boolean gpa = cmbReport.getSelectedIndex() == 1; // second item = gpa report
+        String[] columns;
+        List<Object[]> rows;
+        if (gpa) {
+            columns = new String[] {"Program", "3.5 - 4.0", "3.0 - 3.49", "2.0 - 2.99", "Below 2.0", "No GPA yet"};
+            rows = ctx.getReports().gpaDistributionByProgram();
+        } else {
+            columns = new String[] {"Department", "Semester", "Course ID", "Course Name", "Enrolled"};
+            rows = ctx.getReports().enrollmentByDepartmentAndCourse();
+        }
+        // new table each time so the columns can change, and nobody can type in it
+        DefaultTableModel model = new DefaultTableModel(columns, 0) {
+            @Override
+            public boolean isCellEditable(int row, int col) {
+                return false;
+            }
+        };
+        int total = 0;
+        for (Object[] row : rows) {
+            model.addRow(row);
+            if (!gpa) {
+                total += (Integer) row[4]; // add up the enrolled column
+            }
+        }
+        tblReport.setModel(model);
+        lblNote.setText(gpa ? "Number of students in each overall-GPA range."
+                : "Total enrolled seats: " + total);
     }
 
     /**
@@ -39,19 +84,77 @@ public class RegReportsPanel extends javax.swing.JPanel {
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
-        this.setLayout(layout);
-        layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 400, Short.MAX_VALUE)
-        );
-        layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 300, Short.MAX_VALUE)
-        );
+        pnlTop = new javax.swing.JPanel();
+        jLabel1 = new javax.swing.JLabel();
+        cmbReport = new javax.swing.JComboBox<>();
+        scrMain = new javax.swing.JScrollPane();
+        tblReport = new javax.swing.JTable();
+        pnlBottom = new javax.swing.JPanel();
+        lblNote = new javax.swing.JLabel();
+
+        setBackground(java.awt.Color.white);
+        setLayout(new java.awt.BorderLayout());
+
+        pnlTop.setBackground(java.awt.Color.white);
+        pnlTop.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+
+        jLabel1.setText("Report:");
+        pnlTop.add(jLabel1);
+
+        cmbReport.setModel(new javax.swing.DefaultComboBoxModel<>(new String[] { "Enrollment by department / course", "GPA distribution by program" }));
+        cmbReport.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                cmbReportActionPerformed(evt);
+            }
+        });
+        pnlTop.add(cmbReport);
+
+        add(pnlTop, java.awt.BorderLayout.NORTH);
+
+        scrMain.setBackground(java.awt.Color.white);
+
+        tblReport.setModel(new javax.swing.table.DefaultTableModel(
+            new Object [][] {
+
+            },
+            new String [] {
+                "Column 1", "Column 2", "Column 3"
+            }
+        ) {
+            boolean[] canEdit = new boolean [] {
+                false, false, false
+            };
+
+            public boolean isCellEditable(int rowIndex, int columnIndex) {
+                return canEdit [columnIndex];
+            }
+        });
+        tblReport.setFillsViewportHeight(true);
+        scrMain.setViewportView(tblReport);
+
+        add(scrMain, java.awt.BorderLayout.CENTER);
+
+        pnlBottom.setBackground(java.awt.Color.white);
+        pnlBottom.setLayout(new java.awt.FlowLayout(java.awt.FlowLayout.LEFT));
+
+        lblNote.setText(" ");
+        pnlBottom.add(lblNote);
+
+        add(pnlBottom, java.awt.BorderLayout.SOUTH);
     }// </editor-fold>//GEN-END:initComponents
 
+    private void cmbReportActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_cmbReportActionPerformed
+        // TODO add your handling code here:
+        if (ctx != null) { refresh(); } // switch to the report you picked
+    }//GEN-LAST:event_cmbReportActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox<String> cmbReport;
+    private javax.swing.JLabel jLabel1;
+    private javax.swing.JLabel lblNote;
+    private javax.swing.JPanel pnlBottom;
+    private javax.swing.JPanel pnlTop;
+    private javax.swing.JScrollPane scrMain;
+    private javax.swing.JTable tblReport;
     // End of variables declaration//GEN-END:variables
 }

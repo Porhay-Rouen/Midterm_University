@@ -94,6 +94,8 @@ public class MainFrame extends javax.swing.JFrame {
         switch (session.getRoleType()) {
             case ADMIN:
                 addPage("Admin", new ui.admin.AdminMainPanel(ctx, session));
+                setSize(1100, 700);     
+                setLocationRelativeTo(null);   
                 break;
             case FACULTY:
                 addPage("My Courses", new ui.faculty.FacultyMainPanel(ctx, session));

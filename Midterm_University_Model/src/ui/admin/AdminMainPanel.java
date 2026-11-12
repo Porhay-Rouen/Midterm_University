@@ -30,17 +30,21 @@ public class AdminMainPanel extends javax.swing.JPanel {
         this.session = session;
 
         // Put the Dashboard page into the right-side area
-        workArea.add(new DashboardPanel(ctx, session), "Dashboard");
-        workArea.add(new RegisterPanel(ctx, session), "Register");     
+        workArea.add(new DashboardPanel(ctx, session), "Dashboard");    
         workArea.add(new AccountsPanel(ctx, session), "Accounts");   
         workArea.add(new RecordsPanel(ctx, session), "Records");  
-
+        workArea.add(new RegisterPanel(ctx, session), "Register"); 
+        workArea.add(new RegistrarsPanel(ctx, session), "Registrars");
+        workArea.add(new ProfilePanel(ctx, session), "Profile");
+        
 
         // What each button does
-        btnDashboard.addActionListener(e -> showPage("Dashboard"));
-        btnRegister.addActionListener(e -> showPage("Register"));          
+        btnDashboard.addActionListener(e -> showPage("Dashboard"));         
         btnAccounts.addActionListener(e -> showPage("Accounts"));
         btnRecords.addActionListener(e -> showPage("Records")); 
+        btnRegister.addActionListener(e -> showPage("Register"));
+        btnRegistrars.addActionListener(e -> showPage("Registrars")); 
+        btnProfile.addActionListener(e -> showPage("Profile")); 
         btnLogout.addActionListener(e -> logout());
 
         showPage("Dashboard");   // the page that opens first
@@ -84,6 +88,7 @@ public class AdminMainPanel extends javax.swing.JPanel {
 
         jPanel2.setBackground(new java.awt.Color(255, 0, 0));
 
+        jLabel2.setBackground(new java.awt.Color(0, 0, 0));
         jLabel2.setFont(new java.awt.Font("Helvetica Neue", 1, 13)); // NOI18N
         jLabel2.setForeground(new java.awt.Color(255, 255, 255));
         jLabel2.setText("--- ADMIN ---");
@@ -92,17 +97,17 @@ public class AdminMainPanel extends javax.swing.JPanel {
         jPanel2.setLayout(jPanel2Layout);
         jPanel2Layout.setHorizontalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(223, 223, 223)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addContainerGap(515, Short.MAX_VALUE)
                 .addComponent(jLabel2)
-                .addContainerGap(301, Short.MAX_VALUE))
+                .addGap(502, 502, 502))
         );
         jPanel2Layout.setVerticalGroup(
             jPanel2Layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(jPanel2Layout.createSequentialGroup()
-                .addGap(16, 16, 16)
+            .addGroup(javax.swing.GroupLayout.Alignment.TRAILING, jPanel2Layout.createSequentialGroup()
+                .addContainerGap(17, Short.MAX_VALUE)
                 .addComponent(jLabel2)
-                .addContainerGap(15, Short.MAX_VALUE))
+                .addGap(14, 14, 14))
         );
 
         menuPanel.setBackground(new java.awt.Color(255, 255, 255));
@@ -121,6 +126,7 @@ public class AdminMainPanel extends javax.swing.JPanel {
         btnRegistrars.addActionListener(this::btnRegistrarsActionPerformed);
 
         btnProfile.setText("Profile");
+        btnProfile.addActionListener(this::btnProfileActionPerformed);
 
         btnLogout.setText("Log Out");
 
@@ -157,7 +163,7 @@ public class AdminMainPanel extends javax.swing.JPanel {
                 .addComponent(btnProfile, javax.swing.GroupLayout.PREFERRED_SIZE, 29, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addGap(18, 18, 18)
                 .addComponent(btnLogout, javax.swing.GroupLayout.PREFERRED_SIZE, 31, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(214, Short.MAX_VALUE))
+                .addContainerGap(308, Short.MAX_VALUE))
         );
 
         workArea.setBackground(new java.awt.Color(255, 255, 255));
@@ -195,6 +201,10 @@ public class AdminMainPanel extends javax.swing.JPanel {
     private void btnRegisterActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnRegisterActionPerformed
         // TODO add your handling code here:
     }//GEN-LAST:event_btnRegisterActionPerformed
+
+    private void btnProfileActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_btnProfileActionPerformed
+        // TODO add your handling code here:
+    }//GEN-LAST:event_btnProfileActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
